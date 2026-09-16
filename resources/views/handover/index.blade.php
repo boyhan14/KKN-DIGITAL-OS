@@ -60,56 +60,75 @@
 
         <!-- Handover Execution Form -->
         @if(!$isLocked)
-            <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8">
-                <h3 class="text-base font-bold text-slate-900 mb-2">Finalisasi & Serah Terima Aset Digital</h3>
-                <p class="text-xs text-slate-500 mb-6">
-                    Memilih akun perangkat desa yang akan menerima hak kelola. Setelah diserahkan, hak tulis mahasiswa akan dikunci dan kepemilikan operasional website resmi menjadi milik Desa {{ $village->name }}.
-                </p>
-
-                <form action="{{ route('group.handover.execute', $group->id) }}" method="POST" class="space-y-4 text-xs max-w-xl">
-                    @csrf
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Judul Berita Acara Handover</label>
-                        <input type="text" name="title" required value="Berita Acara Serah Terima Aset Digital Desa {{ $village->name }}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+            @if($canExecuteHandover)
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-8">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                            Wewenang Eksekusi: KETUA / DPL / PEMERINTAH DESA
+                        </span>
                     </div>
+                    <h3 class="text-base font-bold text-slate-900 mb-1">Finalisasi & Serah Terima Aset Digital</h3>
+                    <p class="text-xs text-slate-500 mb-6">
+                        Memilih akun perangkat desa yang akan menerima hak kelola. Setelah diserahkan, hak tulis mahasiswa akan dikunci dan kepemilikan operasional website resmi menjadi milik Desa {{ $village->name }}.
+                    </p>
 
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Penerima Kuasa (Perangkat / Admin Desa)</label>
-                        <select name="village_admin_id" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                            <option value="">Pilih Akun Perangkat Desa</option>
-                            @foreach($villageUsers as $vu)
-                                <option value="{{ $vu->id }}">{{ $vu->name }} ({{ $vu->email }}) — {{ $vu->role }}</option>
-                            @endforeach
-                        </select>
-                        <p class="text-[11px] text-slate-400 mt-1">Akun yang dipilih otomatis akan memiliki hak akses penuh mengelola portal desa setelah serah terima.</p>
-                    </div>
+                    <form action="{{ route('group.handover.execute', $group->id) }}" method="POST" class="space-y-4 text-xs max-w-xl">
+                        @csrf
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Judul Berita Acara Handover</label>
+                            <input type="text" name="title" required value="Berita Acara Serah Terima Aset Digital Desa {{ $village->name }}" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
+                        </div>
 
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Tanggal Serah Terima</label>
-                        <input type="date" name="handover_date" required value="{{ now()->toDateString() }}" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                    </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Penerima Kuasa (Perangkat / Admin Desa)</label>
+                            <select name="village_admin_id" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                                <option value="">Pilih Akun Perangkat Desa</option>
+                                @foreach($villageUsers as $vu)
+                                    <option value="{{ $vu->id }}">{{ $vu->name }} ({{ $vu->email }}) — {{ $vu->role }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[11px] text-slate-400 mt-1">Akun yang dipilih otomatis akan memiliki hak akses penuh mengelola portal desa setelah serah terima.</p>
+                        </div>
 
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">Catatan Serah Terima / Pesan untuk Desa</label>
-                        <textarea name="notes" rows="3" class="w-full p-3 rounded-xl border border-slate-300 text-xs leading-relaxed" placeholder="Catatan panduan singkat, rekomendasi kelanjutan program, dan pesan penutup KKN...">Serah terima aset digital desa hasil program kerja KKN resmi diserahkan kepada Pemerintah Desa Sukamaju untuk diteruskan pengelolaannya.</textarea>
-                    </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Tanggal Serah Terima</label>
+                            <input type="date" name="handover_date" required value="{{ now()->toDateString() }}" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                        </div>
 
-                    <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-                        <label class="flex items-start space-x-3 cursor-pointer">
-                            <input type="checkbox" name="confirm_finalize" value="1" required class="mt-0.5 rounded-sm border-amber-400 text-emerald-600">
-                            <span class="text-xs text-amber-950 font-medium leading-relaxed">
-                                Saya menyatakan bahwa data telah diverifikasi bersama Dosen Pembimbing dan Pemerintah Desa. Dengan mencentang ini, kelompok KKN resmi menyelesaikan tugas operasional dan menyerahkan kendali penuh ke desa.
-                            </span>
-                        </label>
-                    </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Catatan Serah Terima / Pesan untuk Desa</label>
+                            <textarea name="notes" rows="3" class="w-full p-3 rounded-xl border border-slate-300 text-xs leading-relaxed" placeholder="Catatan panduan singkat, rekomendasi kelanjutan program, dan pesan penutup KKN...">Serah terima aset digital desa hasil program kerja KKN resmi diserahkan kepada Pemerintah Desa Sukamaju untuk diteruskan pengelolaannya.</textarea>
+                        </div>
 
-                    <div class="pt-2">
-                        <button type="submit" class="px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/25 transition">
-                            Eksekusi Digital Handover & Terbitkan Berita Acara
-                        </button>
+                        <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                            <label class="flex items-start space-x-3 cursor-pointer">
+                                <input type="checkbox" name="confirm_finalize" value="1" required class="mt-0.5 rounded-sm border-amber-400 text-emerald-600">
+                                <span class="text-xs text-amber-950 font-medium leading-relaxed">
+                                    Saya menyatakan bahwa data telah diverifikasi bersama Dosen Pembimbing dan Pemerintah Desa. Dengan mencentang ini, kelompok KKN resmi menyelesaikan tugas operasional dan menyerahkan kendali penuh ke desa.
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/25 transition">
+                                Eksekusi Digital Handover & Terbitkan Berita Acara
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @else
+                <div class="bg-cyan-50/80 rounded-3xl border border-cyan-200 p-6 sm:p-8 text-xs text-cyan-950 space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-3xl">👤</span>
+                        <div>
+                            <h4 class="font-extrabold text-sm text-cyan-950">Mode Peninjauan Anggota Tim Mahasiswa</h4>
+                            <p class="text-cyan-800 mt-1 leading-relaxed">
+                                Anda dapat memantau checklist kelengkapan aset digital di atas. Penandatanganan dan eksekusi resmi Berita Acara Handover dilakukan oleh <strong>Ketua Kelompok ({{ $group->leader->name ?? 'Ketua' }})</strong> bersama <strong>Dosen Pembimbing Lapangan</strong> dan <strong>Perangkat Desa {{ $village->name }}</strong>.
+                            </p>
+                        </div>
                     </div>
-                </form>
-            </div>
+                </div>
+            @endif
         @else
             <div class="bg-emerald-50 rounded-3xl border border-emerald-200 p-6 sm:p-8 text-xs text-emerald-950 flex items-center justify-between">
                 <div>

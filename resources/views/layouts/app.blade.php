@@ -151,10 +151,57 @@
                 @endif
             @endif
 
-            {{-- 4. VILLAGE ADMIN & STUDENT (DATA DIGITALISASI DESA) --}}
-            @if(($user->isVillageAdmin() || $user->isStudent() || $user->isSuperAdmin()) && $villageId)
+            {{-- 4a. VILLAGE ADMIN (PEMERINTAH DESA) --}}
+            @if($user->isVillageAdmin() && $villageId)
+                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-amber-400/90 tracking-widest uppercase">
+                    Pemerintah Desa
+                </div>
+                <a href="{{ route('village.dashboard', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.dashboard') || request()->routeIs('village.workspace') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard Balai Desa
+                </a>
+                <a href="{{ route('village.delegation', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.delegation') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    Delegasi Mahasiswa KKN
+                </a>
+                <a href="{{ route('village.profile.edit', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.profile.*') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    Profil Balai Desa
+                </a>
+                <a href="{{ route('village.umkm.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.umkm.*') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    Katalog UMKM Warga
+                </a>
+                <a href="{{ route('village.tourism.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.tourism.*') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Destinasi Wisata
+                </a>
+                <a href="{{ route('village.map.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.map.*') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    Peta Spasial GIS
+                </a>
+                <a href="{{ route('village.events.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.events.*') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Agenda Kegiatan
+                </a>
+                <a href="{{ route('village.articles.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.articles.*') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                    Warta & Berita Desa
+                </a>
+                <a href="{{ route('village.gallery.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.gallery.*') ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold shadow-md shadow-amber-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Galeri Dokumentasi
+                </a>
+                <a href="{{ route('public.village.handover', $activeVillage->slug) }}" class="flex items-center px-3 py-2 rounded-xl transition text-amber-300 hover:bg-amber-900/30">
+                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Piagam Serah Terima KKN
+                </a>
+            @endif
+
+            {{-- 4b. STUDENT & SUPER ADMIN (INPUT DATA DIGITALISASI DESA) --}}
+            @if(($user->isStudent() || $user->isSuperAdmin()) && $villageId)
                 <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">
-                    {{ $user->isVillageAdmin() ? 'Pemerintah Desa' : 'Digitalisasi Desa' }}
+                    Input Digitalisasi Desa
                 </div>
                 <a href="{{ route('village.profile.edit', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.profile.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
@@ -184,23 +231,17 @@
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     Galeri Dokumentasi
                 </a>
-                @if($user->isVillageAdmin())
-                    <a href="{{ route('public.village.handover', $activeVillage->slug) }}" class="flex items-center px-3 py-2 rounded-xl transition text-amber-300 hover:bg-amber-900/30">
-                        <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                        Piagam Serah Terima KKN
-                    </a>
-                @endif
             @endif
 
             {{-- 5. UMKM OWNER (PELAKU USAHA DESA) --}}
             @if($user->isUmkmOwner() && $myUmkm)
-                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Portal Usaha Saya</div>
-                <a href="{{ route('village.umkm.edit', ['village' => $myUmkm->village_id, 'umkm' => $myUmkm->id]) }}" class="flex items-center px-3 py-2.5 rounded-xl transition {{ request()->routeIs('village.umkm.edit') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-pink-400/90 tracking-widest uppercase">Portal Usaha Saya</div>
+                <a href="{{ route('village.umkm.edit', ['village' => $myUmkm->village_id, 'umkm' => $myUmkm->id]) }}" class="flex items-center px-3 py-2.5 rounded-xl transition {{ request()->routeIs('village.umkm.edit') ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold shadow-md shadow-pink-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                     Kelola Produk & Usaha
                 </a>
                 <a href="{{ route('public.village.umkm.show', [$myUmkm->village->slug, $myUmkm->slug]) }}" target="_blank" class="flex items-center px-3 py-2 rounded-xl transition text-slate-300 hover:bg-emerald-900/40 hover:text-white">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <svg class="w-4 h-4 mr-3 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     Lihat Toko Publik
                 </a>
             @endif
@@ -249,6 +290,24 @@
                         <span>Desa {{ $activeVillage->name }}</span>
                     </a>
                 @endif
+                
+                <!-- Distinct Global Role Pill Badge -->
+                @php
+                    $roleBadges = [
+                        'SUPER_ADMIN' => ['label' => 'Super Admin', 'class' => 'bg-rose-100 text-rose-800 border-rose-200'],
+                        'CAMPUS_ADMIN' => ['label' => 'Admin LPPM Kampus', 'class' => 'bg-indigo-100 text-indigo-800 border-indigo-200'],
+                        'SUPERVISOR' => ['label' => 'Dosen Pembimbing (DPL)', 'class' => 'bg-purple-100 text-purple-800 border-purple-200'],
+                        'GROUP_LEADER' => ['label' => 'Ketua Kelompok KKN', 'class' => 'bg-emerald-100 text-emerald-800 border-emerald-200'],
+                        'STUDENT' => ['label' => 'Anggota Mahasiswa', 'class' => 'bg-cyan-100 text-cyan-800 border-cyan-200'],
+                        'VILLAGE_ADMIN' => ['label' => 'Pemerintah Desa', 'class' => 'bg-amber-100 text-amber-800 border-amber-200'],
+                        'UMKM_OWNER' => ['label' => 'Pelaku Usaha UMKM', 'class' => 'bg-pink-100 text-pink-800 border-pink-200'],
+                    ];
+                    $badgeInfo = $roleBadges[auth()->user()->role] ?? ['label' => auth()->user()->role, 'class' => 'bg-slate-100 text-slate-700 border-slate-200'];
+                @endphp
+                <span class="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-extrabold border {{ $badgeInfo['class'] }}">
+                    {{ $badgeInfo['label'] }}
+                </span>
+
                 <div class="text-right hidden sm:block">
                     <div class="text-xs font-bold text-slate-800 leading-tight">{{ auth()->user()->name }}</div>
                     <div class="text-[10px] text-slate-400">{{ auth()->user()->email }}</div>

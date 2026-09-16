@@ -10,6 +10,55 @@ use Illuminate\Http\Request;
 
 class VillageProfileController extends Controller
 {
+    public function dashboard(Village $village)
+    {
+        $village->load([
+            'profile',
+            'facilities',
+            'handoverPackages',
+            'groups.supervisor',
+            'groups.leader',
+            'groups.members'
+        ]);
+
+        $activeGroup = $village->activeGroup();
+        $umkmCount = $village->umkms()->count();
+        $tourismCount = $village->tourismPlaces()->count();
+        $mapCount = $village->mapLocations()->count();
+        $articleCount = $village->articles()->count();
+        $eventCount = $village->events()->count();
+
+        $handoverScore = $village->handoverReadinessScore();
+        $isHandedOver = $village->isHandedOver();
+        $handoverPackage = $village->latestHandoverPackage();
+
+        return view('village.dashboard', compact(
+            'village',
+            'activeGroup',
+            'umkmCount',
+            'tourismCount',
+            'mapCount',
+            'articleCount',
+            'eventCount',
+            'handoverScore',
+            'isHandedOver',
+            'handoverPackage'
+        ));
+    }
+
+    public function delegation(Village $village)
+    {
+        $village->load([
+            'groups.supervisor',
+            'groups.leader',
+            'groups.members'
+        ]);
+
+        $activeGroup = $village->activeGroup();
+        
+        return view('village.delegation', compact('village', 'activeGroup'));
+    }
+
     public function edit(Village $village)
     {
         $profile = $village->profile ?? $village->profile()->create(['status' => 'DRAFT']);

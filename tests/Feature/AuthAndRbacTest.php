@@ -102,4 +102,90 @@ class AuthAndRbacTest extends TestCase
         $response->assertRedirect('/');
         $this->assertGuest();
     }
+
+    public function test_group_leader_can_manage_members_and_student_cannot(): void
+    {
+        $leader = User::where('email', 'leader@example.com')->first();
+        $student = User::where('email', 'student@example.com')->first();
+        $group = \App\Models\KknGroup::first();
+        $group->update(['status' => 'ACTIVE']);
+
+        // 1. Regular student CANNOT add member
+        $resForbidden = $this->actingAs($student)->post("/workspace/group/{$group->id}/members", [
+            'new_name' => 'Budi Santoso',
+            'new_email' => 'budi@univ.ac.id',
+            'role' => 'MEMBER',
+            'contribution_notes' => 'Divisi Lingkungan',
+        ]);
+        $resForbidden->assertStatus(403);
+
+        // 2. Leader CAN add new student member
+        $resLeaderAdd = $this->actingAs($leader)->post("/workspace/group/{$group->id}/members", [
+            'new_name' => 'Budi Santoso',
+            'new_email' => 'budi@univ.ac.id',
+            'role' => 'MEMBER',
+            'contribution_notes' => 'Divisi Lingkungan',
+        ]);
+        $resLeaderAdd->assertRedirect();
+        
+        $budi = User::where('email', 'budi@univ.ac.id')->first();
+        $this->assertNotNull($budi);
+        $this->assertDatabaseHas('group_members', [
+            'kkn_group_id' => $group->id,
+            'user_id' => $budi->id,
+            'role' => 'MEMBER',
+            'contribution_notes' => 'Divisi Lingkungan',
+        ]);
+
+        // 3. Leader CAN update member division/role
+        $resUpdate = $this->actingAs($leader)->put("/workspace/group/{$group->id}/members/{$budi->id}", [
+            'role' => 'MEMBER',
+            'contribution_notes' => 'Divisi Web GIS & IT',
+        ]);
+        $resUpdate->assertRedirect();
+        $this->assertDatabaseHas('group_members', [
+            'kkn_group_id' => $group->id,
+            'user_id' => $budi->id,
+            'contribution_notes' => 'Divisi Web GIS & IT',
+        ]);
+
+        // 4. Regular student CANNOT remove member
+        $resStudentDel = $this->actingAs($student)->delete("/workspace/group/{$group->id}/members/{$budi->id}");
+        $resStudentDel->assertStatus(403);
+
+        // 5. Leader CAN remove member
+        $resLeaderDel = $this->actingAs($leader)->delete("/workspace/group/{$group->id}/members/{$budi->id}");
+        $resLeaderDel->assertRedirect();
+        $this->assertDatabaseMissing('group_members', [
+            'kkn_group_id' => $group->id,
+            'user_id' => $budi->id,
+        ]);
+    }
+
+    public function test_regular_student_cannot_execute_handover(): void
+    {
+        $student = User::where('email', 'student@example.com')->first();
+        $villageAdmin = User::where('email', 'village@example.com')->first();
+        $group = \App\Models\KknGroup::first();
+        $group->update(['status' => 'ACTIVE']);
+
+        $response = $this->actingAs($student)->post("/workspace/group/{$group->id}/handover/execute", [
+            'village_admin_id' => $villageAdmin->id,
+            'title' => 'Serah Terima Tidak Sah',
+            'handover_date' => now()->toDateString(),
+            'confirm_finalize' => '1',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_village_admin_can_access_dashboard_and_delegation(): void
+    {
+        $villageAdmin = User::where('email', 'village@example.com')->first();
+        $village = \App\Models\Village::first();
+
+        $this->actingAs($villageAdmin)->get("/workspace/village/{$village->id}")->assertStatus(200)->assertSee('Pemerintah Desa');
+        $this->actingAs($villageAdmin)->get("/workspace/village/{$village->id}/dashboard")->assertStatus(200)->assertSee('Aksi Cepat Tata Kelola Desa');
+        $this->actingAs($villageAdmin)->get("/workspace/village/{$village->id}/delegation")->assertStatus(200)->assertSee('Delegasi Mahasiswa KKN');
+    }
 }

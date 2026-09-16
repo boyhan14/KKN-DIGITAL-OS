@@ -70,6 +70,9 @@ Route::middleware('auth')->group(function () {
     Route::prefix('workspace/group/{group}')->name('group.')->group(function () {
         Route::get('/', [KknGroupController::class, 'workspace'])->name('workspace');
         Route::get('/members', [KknGroupController::class, 'members'])->name('members');
+        Route::post('/members', [KknGroupController::class, 'storeMember'])->name('members.store');
+        Route::put('/members/{member}', [KknGroupController::class, 'updateMember'])->name('members.update');
+        Route::delete('/members/{member}', [KknGroupController::class, 'destroyMember'])->name('members.destroy');
         Route::get('/activity', [KknGroupController::class, 'activity'])->name('activity');
 
         // Programs & Tasks (Kanban)
@@ -105,7 +108,9 @@ Route::middleware('auth')->group(function () {
 
     // Village Content & Digital Asset Management
     Route::prefix('workspace/village/{village}')->name('village.')->group(function () {
-        Route::get('/', [VillageProfileController::class, 'edit'])->name('workspace');
+        Route::get('/', [VillageProfileController::class, 'dashboard'])->name('workspace');
+        Route::get('/dashboard', [VillageProfileController::class, 'dashboard'])->name('dashboard');
+        Route::get('/delegation', [VillageProfileController::class, 'delegation'])->name('delegation');
         Route::get('/profile', [VillageProfileController::class, 'edit'])->name('profile.edit');
         Route::post('/profile', [VillageProfileController::class, 'update'])->name('profile.update');
         Route::post('/profile/submit', [VillageProfileController::class, 'submitReview'])->name('profile.submit');
