@@ -63,13 +63,17 @@ class VillageProfileController extends Controller
     {
         $profile = $village->profile ?? $village->profile()->create(['status' => 'DRAFT']);
         $facilities = $village->facilities()->latest()->get();
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
 
         return view('village.profile', compact('village', 'profile', 'facilities', 'isLocked'));
     }
 
     public function update(Request $request, Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengelola data profil desa ini.');
+        }
+
         $validated = $request->validate([
             'history' => 'nullable|string',
             'vision' => 'nullable|string',
@@ -101,6 +105,10 @@ class VillageProfileController extends Controller
 
     public function submitReview(Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengajukan review profil desa.');
+        }
+
         if ($village->profile) {
             $village->profile->update(['status' => 'PENDING_REVIEW']);
         }
@@ -110,6 +118,10 @@ class VillageProfileController extends Controller
 
     public function storeFacility(Request $request, Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menambahkan fasilitas desa ini.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|in:EDUCATION,HEALTH,GOVERNMENT,WORSHIP,PUBLIC,OTHER',
@@ -126,6 +138,10 @@ class VillageProfileController extends Controller
 
     public function destroyFacility(Village $village, VillageFacility $facility)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menghapus fasilitas desa.');
+        }
+
         $facility->delete();
         return back()->with('success', 'Fasilitas desa berhasil dihapus.');
     }

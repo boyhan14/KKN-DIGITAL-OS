@@ -14,13 +14,17 @@ class GalleryController extends Controller
     public function index(Village $village)
     {
         $albums = $village->albums()->with('mediaItems')->latest()->get();
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
 
         return view('gallery.index', compact('village', 'albums', 'isLocked'));
     }
 
     public function storeAlbum(Request $request, Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk membuat album galeri desa ini.');
+        }
+
         $validated = $request->validate([
             'album_name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -55,6 +59,10 @@ class GalleryController extends Controller
 
     public function storeMedia(Request $request, Village $village, Album $album)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menambahkan foto ke album desa ini.');
+        }
+
         $validated = $request->validate([
             'caption' => 'nullable|string|max:255',
             'photographer' => 'nullable|string|max:100',
@@ -82,6 +90,10 @@ class GalleryController extends Controller
 
     public function destroyMedia(Village $village, Album $album, MediaItem $media)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menghapus foto galeri.');
+        }
+
         $media->delete();
         return back()->with('success', 'Foto berhasil dihapus.');
     }

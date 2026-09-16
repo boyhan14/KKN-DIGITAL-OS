@@ -29,7 +29,7 @@
     </div>
 
     <!-- Quick Status Change Controls -->
-    @if(!$isLocked)
+    @if(!$isLocked && ($canManageTasks ?? false))
         <div class="pt-2 flex items-center justify-between gap-1 border-t border-slate-100/80">
             @if($prevStatus)
                 <form action="{{ route('group.programs.tasks.status', ['group' => $group->id, 'program' => $program->id, 'task' => $task->id]) }}" method="POST" class="w-1/2">

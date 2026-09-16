@@ -8,11 +8,16 @@
                 <p class="text-xs text-slate-500 mt-1">Arsip dokumen terstruktur: laporan mingguan, materi modul pelatihan UMKM, dan presentasi luaran.</p>
             </div>
             
-            @if(!$isLocked)
+            @if($canUploadDocument ?? false)
                 <button @click="docModal = true" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center space-x-1.5 self-start">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Unggah Dokumen Baru</span>
                 </button>
+            @elseif(auth()->user()->isSupervisor())
+                <div class="px-4 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold flex items-center space-x-2 self-start shadow-xs">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span>Mode DPL: Memeriksa & Mengunduh Berkas Luaran Mahasiswa</span>
+                </div>
             @endif
         </div>
 
@@ -53,7 +58,7 @@
                                 <a href="{{ asset($doc->file_path) }}" target="_blank" class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition">
                                     Unduh Berkas ↗
                                 </a>
-                                @if(!$isLocked)
+                                @if($canUploadDocument ?? false)
                                     <form action="{{ route('group.documents.destroy', ['group' => $group->id, 'document' => $doc->id]) }}" method="POST" onsubmit="return confirm('Hapus dokumen ini?')">
                                         @csrf
                                         @method('DELETE')

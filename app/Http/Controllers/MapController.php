@@ -20,13 +20,17 @@ class MapController extends Controller
     {
         $markers = $this->mapService->getVillageMarkers($village);
         $customLocations = $village->mapLocations()->latest()->get();
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
 
         return view('map.index', compact('village', 'markers', 'customLocations', 'isLocked'));
     }
 
     public function store(Request $request, Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menambahkan titik peta desa ini.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|in:UMKM,TOURISM,FACILITY,OFFICE,KKN_PROGRAM,OTHER',
@@ -43,6 +47,10 @@ class MapController extends Controller
 
     public function destroy(Village $village, MapLocation $location)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menghapus titik peta desa.');
+        }
+
         $location->delete();
         return back()->with('success', 'Titik peta berhasil dihapus.');
     }

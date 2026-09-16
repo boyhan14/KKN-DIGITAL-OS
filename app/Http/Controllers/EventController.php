@@ -13,13 +13,17 @@ class EventController extends Controller
     public function index(Village $village)
     {
         $events = $village->events()->orderBy('date', 'desc')->get();
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
 
         return view('events.index', compact('village', 'events', 'isLocked'));
     }
 
     public function store(Request $request, Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menambahkan agenda kegiatan di desa ini.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'date' => 'required|date',
@@ -65,12 +69,20 @@ class EventController extends Controller
 
     public function submitReview(Village $village, Event $event)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengajukan review agenda kegiatan.');
+        }
+
         $event->update(['status' => 'PENDING_REVIEW']);
         return back()->with('success', 'Agenda kegiatan diajukan untuk review.');
     }
 
     public function destroy(Village $village, Event $event)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menghapus agenda kegiatan.');
+        }
+
         $event->delete();
         return back()->with('success', 'Kegiatan berhasil dihapus.');
     }

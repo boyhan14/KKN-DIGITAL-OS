@@ -21,25 +21,34 @@
                 <div class="flex flex-wrap items-center gap-3">
                     @if(!$isLocked)
                         <!-- Program Completion Status Toggle -->
-                        <form action="{{ route('group.programs.status', ['group' => $group->id, 'program' => $program->id]) }}" method="POST">
-                            @csrf
-                            @if($program->status !== 'COMPLETED')
-                                <input type="hidden" name="status" value="COMPLETED">
-                                <button type="submit" class="btn-shimmer px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition">
-                                    ✓ Tandai Proker Selesai
-                                </button>
-                            @else
-                                <input type="hidden" name="status" value="ONGOING">
-                                <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
-                                    Buka Kembali Proker
-                                </button>
-                            @endif
-                        </form>
+                        @if($canManageTasks || auth()->user()->isSupervisor() || auth()->user()->isSuperAdmin())
+                            <form action="{{ route('group.programs.status', ['group' => $group->id, 'program' => $program->id]) }}" method="POST">
+                                @csrf
+                                @if($program->status !== 'COMPLETED')
+                                    <input type="hidden" name="status" value="COMPLETED">
+                                    <button type="submit" class="btn-shimmer px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition">
+                                        ✓ Tandai Proker Selesai
+                                    </button>
+                                @else
+                                    <input type="hidden" name="status" value="ONGOING">
+                                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                        Buka Kembali Proker
+                                    </button>
+                                @endif
+                            </form>
+                        @endif
 
-                        <button @click="taskModal = true; selectedCol = 'TODO'" class="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center space-x-1.5 shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            <span>Tambah Tugas</span>
-                        </button>
+                        @if($canManageTasks ?? false)
+                            <button @click="taskModal = true; selectedCol = 'TODO'" class="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center space-x-1.5 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <span>Tambah Tugas</span>
+                            </button>
+                        @elseif(auth()->user()->isSupervisor())
+                            <div class="px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+                                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                                <span>DPL Monitoring</span>
+                            </div>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -91,7 +100,7 @@
                         @endforeach
                     </div>
 
-                    @if(!$isLocked)
+                    @if($canManageTasks ?? false)
                         <button @click="taskModal = true; selectedCol = 'TODO'" class="mt-3 w-full py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-200/90 transition shadow-xs">
                             + Tambah Tugas
                         </button>

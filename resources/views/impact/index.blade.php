@@ -9,11 +9,16 @@
             </div>
             
             <div class="flex items-center space-x-2">
-                @if(!$isLocked)
+                @if($canManageImpact ?? false)
                     <button @click="metricModal = true" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center space-x-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         <span>Tambah Indikator Dampak</span>
                     </button>
+                @elseif(auth()->user()->isSupervisor())
+                    <div class="px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold flex items-center space-x-2 shadow-xs">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                        <span>Mode DPL: Memantau Capaian Dampak Pengabdian</span>
+                    </div>
                 @endif
                 <a href="{{ route('public.village.impact', $group->village->slug) }}" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center space-x-1">
                     <span>Lihat Laman Publik</span>
@@ -83,7 +88,7 @@
                             </div>
                         </div>
 
-                        @if(!$isLocked)
+                        @if($canManageImpact ?? false)
                             <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
                                 <button @click="updateModal = true; activeMetric = { id: {{ $metric->id }}, name: '{{ addslashes($metric->metric_name) }}', achieved: {{ $metric->achieved }} }" 
                                         class="font-bold text-emerald-600 hover:text-emerald-700">

@@ -42,7 +42,11 @@ class KknGroupController extends Controller
         $recentLogs = $group->activityLogs()->with('user')->latest()->take(8)->get();
         $isLocked = $group->status === 'COMPLETED';
 
-        return view('group.workspace', compact('group', 'progressData', 'taskCounts', 'recentLogs', 'isLocked'));
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists() || $user->isSuperAdmin();
+        $canCreateProgram = $isMember && !$isLocked;
+
+        return view('group.workspace', compact('group', 'progressData', 'taskCounts', 'recentLogs', 'isLocked', 'canCreateProgram'));
     }
 
     public function members(KknGroup $group)

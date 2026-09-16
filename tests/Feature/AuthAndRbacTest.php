@@ -188,4 +188,101 @@ class AuthAndRbacTest extends TestCase
         $this->actingAs($villageAdmin)->get("/workspace/village/{$village->id}/dashboard")->assertStatus(200)->assertSee('Aksi Cepat Tata Kelola Desa');
         $this->actingAs($villageAdmin)->get("/workspace/village/{$village->id}/delegation")->assertStatus(200)->assertSee('Delegasi Mahasiswa KKN');
     }
+
+    public function test_supervisor_cannot_upload_documents(): void
+    {
+        $supervisor = User::where('role', 'SUPERVISOR')->first();
+        $group = \App\Models\KknGroup::first();
+
+        $response = $this->actingAs($supervisor)->post("/workspace/group/{$group->id}/documents", [
+            'title' => 'Dokumen dari DPL',
+            'visibility' => 'INTERNAL',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_supervisor_cannot_create_impact_metric(): void
+    {
+        $supervisor = User::where('role', 'SUPERVISOR')->first();
+        $group = \App\Models\KknGroup::first();
+
+        $response = $this->actingAs($supervisor)->post("/workspace/group/{$group->id}/impact", [
+            'metric_name' => 'Metrik DPL',
+            'category' => 'UMKM',
+            'baseline' => 0,
+            'target' => 10,
+            'achieved' => 5,
+            'unit' => 'Unit',
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_supervisor_cannot_create_village_entities(): void
+    {
+        $supervisor = User::where('role', 'SUPERVISOR')->first();
+        $village = \App\Models\Village::first();
+
+        // Tourism
+        $resTour = $this->actingAs($supervisor)->post("/workspace/village/{$village->id}/tourism", [
+            'name' => 'Wisata DPL',
+            'category' => 'NATURE',
+        ]);
+        $resTour->assertStatus(403);
+
+        // Article
+        $resArt = $this->actingAs($supervisor)->post("/workspace/village/{$village->id}/articles", [
+            'title' => 'Artikel DPL',
+            'category' => 'NEWS',
+            'content' => 'Konten artikel',
+        ]);
+        $resArt->assertStatus(403);
+
+        // UMKM
+        $resUmkm = $this->actingAs($supervisor)->post("/workspace/village/{$village->id}/umkm", [
+            'business_name' => 'UMKM DPL',
+            'owner_name' => 'Dosen',
+            'category' => 'KULINER',
+        ]);
+        $resUmkm->assertStatus(403);
+    }
+
+    public function test_umkm_owner_cannot_edit_other_umkm(): void
+    {
+        $umkmOwner1 = User::create([
+            'name' => 'Pemilik UMKM 1',
+            'email' => 'umkm1@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'UMKM_OWNER',
+        ]);
+
+        $umkmOwner2 = User::create([
+            'name' => 'Pemilik UMKM 2',
+            'email' => 'umkm2@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'UMKM_OWNER',
+        ]);
+
+        $village = \App\Models\Village::first();
+
+        $umkm1 = \App\Models\Umkm::create([
+            'village_id' => $village->id,
+            'user_id' => $umkmOwner1->id,
+            'business_name' => 'Warung UMKM 1',
+            'slug' => 'warung-umkm-1',
+            'owner_name' => 'Pemilik 1',
+            'category' => 'KULINER',
+            'status' => 'PUBLISHED',
+        ]);
+
+        // Owner 2 tries to edit Owner 1's UMKM
+        $response = $this->actingAs($umkmOwner2)->post("/workspace/village/{$village->id}/umkm/{$umkm1->id}/update", [
+            'business_name' => 'Hacked UMKM',
+            'owner_name' => 'Hacker',
+            'category' => 'KULINER',
+        ]);
+
+        $response->assertStatus(403);
+    }
 }

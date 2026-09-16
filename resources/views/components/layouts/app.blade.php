@@ -71,30 +71,57 @@
         <!-- Navigation Links -->
         <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-sm">
             @php
-                $activeGroup = app(\App\Services\TenantService::class)->getUserGroup(auth()->user());
-                $activeVillage = app(\App\Services\TenantService::class)->getUserVillage(auth()->user());
+                $user = auth()->user();
+                $tenantService = app(\App\Services\TenantService::class);
+                $activeGroup = $tenantService->getUserGroup($user);
+                $activeVillage = $tenantService->getUserVillage($user);
                 $groupId = $activeGroup?->id;
                 $villageId = $activeVillage?->id;
+                $myUmkm = $user->isUmkmOwner() ? \App\Models\Umkm::where('user_id', $user->id)->first() : null;
             @endphp
 
-            @if(auth()->user()->isSuperAdmin() || auth()->user()->isCampusAdmin())
-                <div class="px-3 pt-2 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase">Kampus</div>
+            {{-- 1. Campus Admin & Super Admin Section --}}
+            @if($user->isSuperAdmin() || $user->isCampusAdmin())
+                <div class="px-3 pt-2 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase">LPPM Kampus</div>
                 <a href="{{ route('campus.dashboard') }}" class="flex items-center px-3 py-2.5 rounded-lg transition {{ request()->routeIs('campus.dashboard') ? 'bg-emerald-600 text-white font-semibold shadow-sm' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-                    Dashboard Kampus
+                    Dashboard LPPM Kampus
                 </a>
             @endif
 
-            @if(auth()->user()->isSuperAdmin() || auth()->user()->isSupervisor())
+            {{-- 2. DPL / Supervisor Section --}}
+            @if($user->isSuperAdmin() || $user->isSupervisor())
                 <div class="px-3 pt-3 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase">Dosen Pembimbing</div>
                 <a href="{{ route('supervisor.dashboard') }}" class="flex items-center px-3 py-2.5 rounded-lg transition {{ request()->routeIs('supervisor.dashboard') ? 'bg-emerald-600 text-white font-semibold shadow-sm' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Antrean Review & Bimbingan
+                    Antrean Review & Validasi
                 </a>
             @endif
 
-            @if($groupId)
-                <div class="px-3 pt-3 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase">Kelompok KKN</div>
+            {{-- 3. Pelaku UMKM Section (Exclusively for UMKM Owner) --}}
+            @if($user->isUmkmOwner())
+                <div class="px-3 pt-3 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase">Toko UMKM Anda</div>
+                @if($myUmkm)
+                    <a href="{{ route('village.umkm.edit', ['village' => $myUmkm->village_id, 'umkm' => $myUmkm->id]) }}" class="flex items-center px-3 py-2.5 rounded-lg transition {{ request()->routeIs('village.umkm.*') ? 'bg-emerald-600 text-white font-semibold shadow-sm' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-5 h-5 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        Kelola Usaha & Produk
+                    </a>
+                @elseif($villageId)
+                    <a href="{{ route('village.umkm.create', $villageId) }}" class="flex items-center px-3 py-2.5 rounded-lg transition {{ request()->routeIs('village.umkm.*') ? 'bg-emerald-600 text-white font-semibold shadow-sm' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-5 h-5 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Daftarkan Profil Usaha
+                    </a>
+                @endif
+            @endif
+
+            {{-- 4. KKN Group Section (For Students, Leaders, and Supervisors) --}}
+            @if($groupId && !$user->isUmkmOwner())
+                <div class="px-3 pt-3 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase flex items-center justify-between">
+                    <span>{{ $user->isSupervisor() ? 'Monitoring Kelompok' : 'Kelompok KKN' }}</span>
+                    @if($user->isSupervisor())
+                        <span class="text-[9px] px-1.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded font-bold">DPL</span>
+                    @endif
+                </div>
                 <a href="{{ route('group.workspace', $groupId) }}" class="flex items-center px-3 py-2 rounded-lg transition {{ request()->routeIs('group.workspace') ? 'bg-emerald-600 text-white font-semibold shadow-sm' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                     Overview Workspace
@@ -125,8 +152,11 @@
                 </a>
             @endif
 
-            @if($villageId)
-                <div class="px-3 pt-3 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase">Data Desa & Digitalisasi</div>
+            {{-- 5. Village Content & Digitalization Section (For Village Admin, Students, Campus Admin, Super Admin) --}}
+            @if($villageId && !$user->isSupervisor() && !$user->isUmkmOwner())
+                <div class="px-3 pt-3 pb-1 text-xs font-semibold text-emerald-400/80 tracking-wider uppercase">
+                    {{ $user->isVillageAdmin() ? 'Pemerintah Desa' : 'Kontribusi Data Desa' }}
+                </div>
                 <a href="{{ route('village.profile.edit', $villageId) }}" class="flex items-center px-3 py-2 rounded-lg transition {{ request()->routeIs('village.profile.*') ? 'bg-emerald-600 text-white font-semibold shadow-sm' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     Profil & Fasilitas Desa

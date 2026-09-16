@@ -24,13 +24,23 @@ class ImpactController extends Controller
         $programs = $group->programs;
         $isLocked = $group->status === 'COMPLETED';
 
-        return view('impact.index', compact('group', 'metrics', 'impactSummary', 'programs', 'isLocked'));
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists() || $user->isSuperAdmin();
+        $canManageImpact = $isMember && !$isLocked;
+
+        return view('impact.index', compact('group', 'metrics', 'impactSummary', 'programs', 'isLocked', 'canManageImpact'));
     }
 
     public function store(Request $request, KknGroup $group)
     {
         if ($group->status === 'COMPLETED') {
-            abort(403, 'Kelompok KKN telah selesai.');
+            abort(403, 'Kelompok KKN telah selesai / di-handover.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat mengelola metrik capaian dampak. Dosen Pembimbing bertindak sebagai evaluator.');
         }
 
         $validated = $request->validate([
@@ -71,6 +81,16 @@ class ImpactController extends Controller
 
     public function update(Request $request, KknGroup $group, ImpactMetric $metric)
     {
+        if ($group->status === 'COMPLETED') {
+            abort(403, 'Kelompok KKN telah selesai / di-handover.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat mengelola metrik dampak.');
+        }
+
         $validated = $request->validate([
             'achieved' => 'required|integer|min:0',
             'description' => 'nullable|string',
@@ -83,6 +103,16 @@ class ImpactController extends Controller
 
     public function destroy(KknGroup $group, ImpactMetric $metric)
     {
+        if ($group->status === 'COMPLETED') {
+            abort(403, 'Kelompok KKN telah selesai / di-handover.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat mengelola metrik dampak.');
+        }
+
         $metric->delete();
         return back()->with('success', 'Metrik dampak berhasil dihapus.');
     }

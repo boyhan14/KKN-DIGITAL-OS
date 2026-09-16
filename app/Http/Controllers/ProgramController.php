@@ -16,7 +16,11 @@ class ProgramController extends Controller
         $programs = $group->programs()->with(['leader', 'tasks'])->latest()->get();
         $isLocked = $group->status === 'COMPLETED';
 
-        return view('programs.index', compact('group', 'programs', 'isLocked'));
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists() || $user->isSuperAdmin();
+        $canCreateProgram = $isMember && !$isLocked;
+
+        return view('programs.index', compact('group', 'programs', 'isLocked', 'canCreateProgram'));
     }
 
     public function show(KknGroup $group, Program $program)
@@ -24,19 +28,29 @@ class ProgramController extends Controller
         $program->load(['leader', 'members', 'tasks.assignee', 'documents', 'impactMetrics']);
         $isLocked = $group->status === 'COMPLETED';
 
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists() || $user->isSuperAdmin();
+        $canManageTasks = $isMember && !$isLocked;
+
         // Kanban columns
         $tasksTodo = $program->tasks->where('status', 'TODO');
         $tasksInProgress = $program->tasks->where('status', 'IN_PROGRESS');
         $tasksReview = $program->tasks->where('status', 'REVIEW');
         $tasksDone = $program->tasks->where('status', 'DONE');
 
-        return view('programs.show', compact('group', 'program', 'tasksTodo', 'tasksInProgress', 'tasksReview', 'tasksDone', 'isLocked'));
+        return view('programs.show', compact('group', 'program', 'tasksTodo', 'tasksInProgress', 'tasksReview', 'tasksDone', 'isLocked', 'canManageTasks'));
     }
 
     public function store(Request $request, KknGroup $group)
     {
         if ($group->status === 'COMPLETED') {
             abort(403, 'Kelompok KKN telah selesai / di-handover.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat membuat program kerja. Dosen Pembimbing Lapangan (DPL) bertindak sebagai pengawas/evaluator.');
         }
 
         $validated = $request->validate([
@@ -87,6 +101,13 @@ class ProgramController extends Controller
 
     public function updateStatus(Request $request, KknGroup $group, Program $program)
     {
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        $isSupervisor = $group->supervisor_id === $user->id || $user->isSupervisor();
+        if (!$isMember && !$isSupervisor && !$user->isSuperAdmin()) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengubah status program kerja ini.');
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:PLANNED,ONGOING,COMPLETED,CANCELLED',
         ]);
@@ -108,7 +129,13 @@ class ProgramController extends Controller
     public function storeTask(Request $request, KknGroup $group, Program $program)
     {
         if ($group->status === 'COMPLETED') {
-            abort(403, 'Akses tulis terkunci.');
+            abort(403, 'Akses tulis terkunci. Kelompok KKN telah selesai.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat menambahkan tugas. Dosen Pembimbing bertindak sebagai pengawas/evaluator.');
         }
 
         $validated = $request->validate([
@@ -136,6 +163,16 @@ class ProgramController extends Controller
 
     public function updateTaskStatus(Request $request, KknGroup $group, Program $program, ProgramTask $task)
     {
+        if ($group->status === 'COMPLETED') {
+            abort(403, 'Akses tulis terkunci. Kelompok KKN telah selesai.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat mengelola status tugas.');
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:TODO,IN_PROGRESS,REVIEW,DONE',
         ]);

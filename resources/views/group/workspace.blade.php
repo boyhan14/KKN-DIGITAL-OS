@@ -155,9 +155,15 @@
                     <h3 class="text-base font-black text-slate-900">Program Kerja Lapangan</h3>
                     <p class="text-xs text-slate-500">Daftar agenda program kerja yang dijalankan kelompok.</p>
                 </div>
-                <a href="{{ route('group.programs.index', $group->id) }}" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition">
-                    + Tambah Program
-                </a>
+                @if($canCreateProgram ?? false)
+                    <a href="{{ route('group.programs.index', $group->id) }}" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition">
+                        + Tambah Program
+                    </a>
+                @else
+                    <a href="{{ route('group.programs.index', $group->id) }}" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                        Lihat Program Kerja →
+                    </a>
+                @endif
             </div>
 
             @if($group->programs->isEmpty())

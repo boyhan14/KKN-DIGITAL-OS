@@ -14,19 +14,55 @@ class UmkmController extends Controller
 {
     public function index(Village $village)
     {
-        $umkms = $village->umkms()->with('products')->latest()->get();
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $user = auth()->user();
+        if ($user->isUmkmOwner()) {
+            $umkms = $village->umkms()->where('user_id', $user->id)->with('products')->latest()->get();
+        } else {
+            $umkms = $village->umkms()->with('products')->latest()->get();
+        }
+
+        $canManage = $user->isSuperAdmin() || $user->isVillageAdmin() || $user->isUmkmOwner() ||
+            (!$village->isHandedOver() && $village->activeGroup()?->members()->where('users.id', $user->id)->exists());
+        $isLocked = !$canManage;
 
         return view('umkm.index', compact('village', 'umkms', 'isLocked'));
     }
 
     public function create(Village $village)
     {
+        $user = auth()->user();
+        if ($user->isSupervisor()) {
+            abort(403, 'Dosen Pembimbing Lapangan (DPL) bertindak sebagai reviewer/evaluator dan tidak mendaftarkan entitas UMKM.');
+        }
+
+        if ($user->isUmkmOwner()) {
+            $existing = Umkm::where('user_id', $user->id)->first();
+            if ($existing) {
+                return redirect()->route('village.umkm.edit', ['village' => $existing->village_id, 'umkm' => $existing->id]);
+            }
+        } else {
+            $this->authorizeUmkmAccess($village, null);
+        }
+
         return view('umkm.create', compact('village'));
     }
 
     public function store(Request $request, Village $village)
     {
+        $user = auth()->user();
+        if ($user->isSupervisor()) {
+            abort(403, 'Dosen Pembimbing Lapangan (DPL) bertindak sebagai reviewer/evaluator dan tidak mendaftarkan entitas UMKM.');
+        }
+
+        if ($user->isUmkmOwner()) {
+            $existing = Umkm::where('user_id', $user->id)->first();
+            if ($existing) {
+                return redirect()->route('village.umkm.edit', ['village' => $existing->village_id, 'umkm' => $existing->id]);
+            }
+        } else {
+            $this->authorizeUmkmAccess($village, null);
+        }
+
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
@@ -80,14 +116,17 @@ class UmkmController extends Controller
 
     public function edit(Village $village, Umkm $umkm)
     {
+        $this->authorizeUmkmAccess($village, $umkm);
         $umkm->load('products');
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin() && auth()->user()->id !== $umkm->user_id;
 
         return view('umkm.edit', compact('village', 'umkm', 'isLocked'));
     }
 
     public function update(Request $request, Village $village, Umkm $umkm)
     {
+        $this->authorizeUmkmAccess($village, $umkm);
+
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
@@ -108,6 +147,8 @@ class UmkmController extends Controller
 
     public function submitReview(Village $village, Umkm $umkm)
     {
+        $this->authorizeUmkmAccess($village, $umkm);
+
         $umkm->update(['status' => 'PENDING_REVIEW']);
 
         ActivityLog::create([
@@ -124,6 +165,8 @@ class UmkmController extends Controller
 
     public function storeProduct(Request $request, Village $village, Umkm $umkm)
     {
+        $this->authorizeUmkmAccess($village, $umkm);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
@@ -144,13 +187,51 @@ class UmkmController extends Controller
 
     public function destroyProduct(Village $village, Umkm $umkm, UmkmProduct $product)
     {
+        $this->authorizeUmkmAccess($village, $umkm);
+
         $product->delete();
         return back()->with('success', 'Produk berhasil dihapus.');
     }
 
     public function destroy(Village $village, Umkm $umkm)
     {
+        $this->authorizeUmkmAccess($village, $umkm);
+
         $umkm->delete();
         return redirect()->route('village.umkm.index', $village->id)->with('success', 'UMKM berhasil dihapus.');
+    }
+
+    protected function authorizeUmkmAccess(Village $village, ?Umkm $umkm = null): void
+    {
+        $user = auth()->user();
+        if ($user->isSuperAdmin()) {
+            return;
+        }
+
+        if ($user->isSupervisor()) {
+            abort(403, 'Dosen Pembimbing Lapangan (DPL) bertindak sebagai evaluator/reviewer dan tidak mengelola UMKM secara langsung.');
+        }
+
+        if ($user->isUmkmOwner()) {
+            if ($umkm && $umkm->user_id !== $user->id) {
+                abort(403, 'Anda hanya memiliki wewenang untuk mengelola data UMKM milik Anda sendiri.');
+            }
+            return;
+        }
+
+        if ($user->isVillageAdmin()) {
+            return;
+        }
+
+        $activeGroup = $village->activeGroup();
+        $isGroupMember = $activeGroup && $activeGroup->members()->where('users.id', $user->id)->exists();
+
+        if ($village->isHandedOver()) {
+            abort(403, 'Desa telah melalui proses Handover. Hanya Perangkat Desa atau Pelaku UMKM bersangkutan yang dapat mengelola data.');
+        }
+
+        if (!$isGroupMember && !$user->isCampusAdmin()) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengelola data UMKM desa ini.');
+        }
     }
 }

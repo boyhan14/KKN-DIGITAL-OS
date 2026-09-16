@@ -15,13 +15,23 @@ class DocumentController extends Controller
         $programs = $group->programs;
         $isLocked = $group->status === 'COMPLETED';
 
-        return view('documents.index', compact('group', 'documents', 'programs', 'isLocked'));
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists() || $user->isSuperAdmin();
+        $canUploadDocument = $isMember && !$isLocked;
+
+        return view('documents.index', compact('group', 'documents', 'programs', 'isLocked', 'canUploadDocument'));
     }
 
     public function store(Request $request, KknGroup $group)
     {
         if ($group->status === 'COMPLETED') {
-            abort(403, 'Kelompok KKN telah selesai.');
+            abort(403, 'Kelompok KKN telah selesai / di-handover.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat mengunggah dokumen luaran. Dosen Pembimbing bertindak sebagai evaluator.');
         }
 
         $validated = $request->validate([
@@ -56,6 +66,16 @@ class DocumentController extends Controller
 
     public function destroy(KknGroup $group, ProgramDocument $document)
     {
+        if ($group->status === 'COMPLETED') {
+            abort(403, 'Kelompok KKN telah selesai / di-handover.');
+        }
+
+        $user = auth()->user();
+        $isMember = $group->members()->where('users.id', $user->id)->exists();
+        if (!$isMember && !$user->isSuperAdmin()) {
+            abort(403, 'Hanya mahasiswa anggota kelompok KKN yang dapat menghapus dokumen.');
+        }
+
         $document->delete();
         return back()->with('success', 'Dokumen berhasil dihapus.');
     }

@@ -13,18 +13,26 @@ class ArticleController extends Controller
     public function index(Village $village)
     {
         $articles = $village->articles()->with('author')->latest()->get();
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
 
         return view('articles.index', compact('village', 'articles', 'isLocked'));
     }
 
     public function create(Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menulis artikel di desa ini.');
+        }
+
         return view('articles.create', compact('village'));
     }
 
     public function store(Request $request, Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menulis artikel di desa ini.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|in:NEWS,ANNOUNCEMENT,KKN,VILLAGE,UMKM,TOURISM,EDUCATION',
@@ -69,12 +77,20 @@ class ArticleController extends Controller
 
     public function edit(Village $village, Article $article)
     {
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengedit artikel di desa ini.');
+        }
+
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
         return view('articles.edit', compact('village', 'article', 'isLocked'));
     }
 
     public function update(Request $request, Village $village, Article $article)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengedit artikel di desa ini.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category' => 'required|in:NEWS,ANNOUNCEMENT,KKN,VILLAGE,UMKM,TOURISM,EDUCATION',
@@ -91,12 +107,20 @@ class ArticleController extends Controller
 
     public function submitReview(Village $village, Article $article)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengajukan review artikel.');
+        }
+
         $article->update(['status' => 'PENDING_REVIEW']);
         return back()->with('success', 'Artikel telah diajukan ke Dosen Pembimbing untuk direview.');
     }
 
     public function destroy(Village $village, Article $article)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menghapus artikel.');
+        }
+
         $article->delete();
         return back()->with('success', 'Artikel berhasil dihapus.');
     }

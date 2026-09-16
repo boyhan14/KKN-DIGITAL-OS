@@ -78,12 +78,13 @@ class TenantService
     }
 
     /**
-     * Verify if user can write/modify content for the given group.
-     * If KKN program is completed / handed over, students cannot write.
+     * Verify if user can write/modify operational content for the given group.
+     * Only active student members of the group or SuperAdmin can write group proker/tasks.
+     * Supervisors act as reviewers/evaluators and do not create student group content.
      */
     public function canWriteGroup(User $user, KknGroup $group): bool
     {
-        if ($user->isSuperAdmin() || $user->isCampusAdmin()) {
+        if ($user->isSuperAdmin()) {
             return true;
         }
 
@@ -91,20 +92,69 @@ class TenantService
             return false; // Operational write locked after handover!
         }
 
-        if ($user->isSupervisor() && $group->supervisor_id === $user->id) {
-            return true;
-        }
-
         return $group->members()->where('users.id', $user->id)->exists();
     }
 
     /**
-     * Verify if user can manage the given village.
+     * Check if user can create work programs for the group.
+     */
+    public function canCreateProgram(User $user, KknGroup $group): bool
+    {
+        return $this->canWriteGroup($user, $group);
+    }
+
+    /**
+     * Check if user can manage tasks (Kanban) for the group.
+     */
+    public function canManageTasks(User $user, KknGroup $group): bool
+    {
+        return $this->canWriteGroup($user, $group);
+    }
+
+    /**
+     * Check if user can upload documents to the group repository.
+     */
+    public function canUploadDocuments(User $user, KknGroup $group): bool
+    {
+        return $this->canWriteGroup($user, $group);
+    }
+
+    /**
+     * Check if user can manage impact metrics for the group.
+     */
+    public function canManageImpact(User $user, KknGroup $group): bool
+    {
+        return $this->canWriteGroup($user, $group);
+    }
+
+    /**
+     * Check if user can manage group members (Leader, Campus Admin, SuperAdmin).
+     */
+    public function canManageGroupMembers(User $user, KknGroup $group): bool
+    {
+        if ($user->isSuperAdmin() || $user->isCampusAdmin()) {
+            return true;
+        }
+
+        if ($group->status === 'COMPLETED') {
+            return false;
+        }
+
+        return $user->id === $group->leader_id || $group->members()->where('users.id', $user->id)->wherePivot('role', 'LEADER')->exists();
+    }
+
+    /**
+     * Verify if user can manage the given village content (Profile, Tourism, Events, News, Maps, Gallery).
+     * Supervisors and UMKM owners are excluded.
      */
     public function canManageVillage(User $user, Village $village): bool
     {
         if ($user->isSuperAdmin()) {
             return true;
+        }
+
+        if ($user->isSupervisor() || $user->isUmkmOwner()) {
+            return false;
         }
 
         if ($user->isCampusAdmin()) {

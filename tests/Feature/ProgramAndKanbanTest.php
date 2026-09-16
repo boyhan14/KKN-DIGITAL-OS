@@ -164,4 +164,75 @@ class ProgramAndKanbanTest extends TestCase
 
         $programResponse->assertStatus(403);
     }
+
+    public function test_supervisor_cannot_create_work_program(): void
+    {
+        $supervisor = User::where('role', 'SUPERVISOR')->firstOrFail();
+
+        $response = $this->actingAs($supervisor)
+            ->post("/workspace/group/{$this->group->id}/programs", [
+                'title' => 'Program dari DPL',
+                'category' => 'EDUCATION',
+                'priority' => 'MEDIUM',
+            ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_supervisor_cannot_create_task_under_program(): void
+    {
+        $supervisor = User::where('role', 'SUPERVISOR')->firstOrFail();
+        $program = $this->group->programs()->firstOrFail();
+
+        $response = $this->actingAs($supervisor)
+            ->post("/workspace/group/{$this->group->id}/programs/{$program->id}/tasks", [
+                'title' => 'Tugas dari DPL',
+                'priority' => 'HIGH',
+                'status' => 'TODO',
+            ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_supervisor_cannot_update_task_status(): void
+    {
+        $supervisor = User::where('role', 'SUPERVISOR')->firstOrFail();
+        $program = $this->group->programs()->firstOrFail();
+        $task = ProgramTask::create([
+            'program_id' => $program->id,
+            'kkn_group_id' => $this->group->id,
+            'title' => 'Tugas Mahasiswa',
+            'priority' => 'MEDIUM',
+            'status' => 'TODO',
+        ]);
+
+        $response = $this->actingAs($supervisor)
+            ->post("/workspace/group/{$this->group->id}/programs/{$program->id}/tasks/{$task->id}/status", [
+                'status' => 'IN_PROGRESS',
+            ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_village_admin_cannot_create_program_or_task(): void
+    {
+        $villageAdmin = User::where('role', 'VILLAGE_ADMIN')->firstOrFail();
+        $program = $this->group->programs()->firstOrFail();
+
+        $responseProg = $this->actingAs($villageAdmin)
+            ->post("/workspace/group/{$this->group->id}/programs", [
+                'title' => 'Program dari Desa',
+                'category' => 'GOVERNANCE',
+                'priority' => 'LOW',
+            ]);
+        $responseProg->assertStatus(403);
+
+        $responseTask = $this->actingAs($villageAdmin)
+            ->post("/workspace/group/{$this->group->id}/programs/{$program->id}/tasks", [
+                'title' => 'Tugas dari Desa',
+                'priority' => 'LOW',
+                'status' => 'TODO',
+            ]);
+        $responseTask->assertStatus(403);
+    }
 }

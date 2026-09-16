@@ -8,11 +8,20 @@
                 <p class="text-xs text-slate-500 mt-1">Susun rencana aksi, target luaran, dan pantau penyelesaian setiap program kerja di desa.</p>
             </div>
             
-            @if(!$isLocked)
+            @if($canCreateProgram ?? false)
                 <button @click="createModal = true" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center space-x-2 self-start">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Tambah Program Kerja</span>
                 </button>
+            @elseif(auth()->user()->isSupervisor())
+                <div class="px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-semibold flex items-center space-x-2 self-start shadow-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse"></span>
+                    <span>Mode DPL: Memantau & Mengevaluasi Pelaksanaan Proker Mahasiswa</span>
+                </div>
+            @elseif($isLocked)
+                <div class="px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold self-start">
+                    Program Kerja Terkunci (Kelompok KKN Selesai)
+                </div>
             @endif
         </div>
 

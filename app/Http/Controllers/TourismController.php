@@ -13,18 +13,26 @@ class TourismController extends Controller
     public function index(Village $village)
     {
         $tourismPlaces = $village->tourismPlaces()->latest()->get();
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
 
         return view('tourism.index', compact('village', 'tourismPlaces', 'isLocked'));
     }
 
     public function create(Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mendaftarkan potensi wisata di desa ini.');
+        }
+
         return view('tourism.create', compact('village'));
     }
 
     public function store(Request $request, Village $village)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mendaftarkan potensi wisata di desa ini.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|in:NATURE,CULINARY,CULTURE,CRAFT,HISTORY,RELIGIOUS,ADVENTURE,OTHER',
@@ -74,12 +82,20 @@ class TourismController extends Controller
 
     public function edit(Village $village, TourismPlace $tourism)
     {
-        $isLocked = $village->isHandedOver() && !auth()->user()->isVillageAdmin() && !auth()->user()->isSuperAdmin();
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengedit destinasi wisata desa ini.');
+        }
+
+        $isLocked = !app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village);
         return view('tourism.edit', compact('village', 'tourism', 'isLocked'));
     }
 
     public function update(Request $request, Village $village, TourismPlace $tourism)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengedit destinasi wisata desa ini.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|in:NATURE,CULINARY,CULTURE,CRAFT,HISTORY,RELIGIOUS,ADVENTURE,OTHER',
@@ -99,6 +115,10 @@ class TourismController extends Controller
 
     public function submitReview(Village $village, TourismPlace $tourism)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk mengajukan review destinasi wisata.');
+        }
+
         $tourism->update(['status' => 'PENDING_REVIEW']);
 
         ActivityLog::create([
@@ -115,6 +135,10 @@ class TourismController extends Controller
 
     public function destroy(Village $village, TourismPlace $tourism)
     {
+        if (!app(\App\Services\TenantService::class)->canManageVillage(auth()->user(), $village)) {
+            abort(403, 'Anda tidak memiliki wewenang untuk menghapus destinasi wisata.');
+        }
+
         $tourism->delete();
         return redirect()->route('village.tourism.index', $village->id)->with('success', 'Destinasi wisata dihapus.');
     }
