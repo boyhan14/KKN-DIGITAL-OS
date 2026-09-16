@@ -242,176 +242,195 @@
 
         <!-- MODAL 1: Tambah Anggota Mahasiswa (Ketua / LPPM Only) -->
         @if($canManageMembers)
-            <div x-show="addModalOpen" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                    <div x-show="addModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="addModalOpen = false" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+            <div x-show="addModalOpen" 
+                 x-cloak
+                 style="display: none;" 
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm overflow-y-auto"
+                 x-transition:enter="ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+
+                <div @click.away="addModalOpen = false" 
+                     class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 relative z-10 my-8 space-y-6">
                     
-                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-                    <div x-show="addModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200">
-                        
-                        <div class="p-6 sm:p-8 space-y-6">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
-                                        ➕
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg font-black text-slate-900">Tambah Anggota Mahasiswa</h3>
-                                        <p class="text-xs text-slate-500">Tetapkan mahasiswa baru ke kelompok {{ $group->group_name }}</p>
-                                    </div>
-                                </div>
-                                <button @click="addModalOpen = false" type="button" class="text-slate-400 hover:text-slate-600">✕</button>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
+                                ➕
                             </div>
-
-                            <!-- Mode Switcher -->
-                            <div class="flex p-1 rounded-xl bg-slate-100 text-xs font-bold">
-                                <button @click="activeTab = 'existing'" type="button" :class="activeTab === 'existing' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="flex-1 py-1.5 rounded-lg transition">
-                                    Pilih Mahasiswa Terdaftar
-                                </button>
-                                <button @click="activeTab = 'new'" type="button" :class="activeTab === 'new' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="flex-1 py-1.5 rounded-lg transition">
-                                    Daftarkan Mahasiswa Baru
-                                </button>
+                            <div>
+                                <h3 class="text-lg font-black text-slate-900">Tambah Anggota Mahasiswa</h3>
+                                <p class="text-xs text-slate-500">Tetapkan mahasiswa baru ke kelompok {{ $group->group_name }}</p>
                             </div>
-
-                            <form action="{{ route('group.members.store', $group->id) }}" method="POST" class="space-y-4 text-xs">
-                                @csrf
-
-                                <!-- Tab 1: Existing Student -->
-                                <div x-show="activeTab === 'existing'" class="space-y-3">
-                                    <label class="block font-bold text-slate-700">Pilih Akun Mahasiswa</label>
-                                    @if($availableStudents->isEmpty())
-                                        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px]">
-                                            Tidak ada mahasiswa bebas kelompok. Silakan gunakan tab <strong>"Daftarkan Mahasiswa Baru"</strong> untuk menginput profil anggota baru.
-                                        </div>
-                                    @else
-                                        <select name="user_id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium">
-                                            <option value="">-- Pilih Mahasiswa --</option>
-                                            @foreach($availableStudents as $s)
-                                                <option value="{{ $s->id }}">{{ $s->name }} ({{ $s->student_id ?? 'NIM' }}) — {{ $s->major ?? 'Umum' }}</option>
-                                            @endforeach
-                                        </select>
-                                    @endif
-                                </div>
-
-                                <!-- Tab 2: New Student -->
-                                <div x-show="activeTab === 'new'" class="space-y-3">
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Nama Lengkap Mahasiswa *</label>
-                                        <input type="text" name="new_name" placeholder="cth: Rahmat Hidayat" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block font-bold text-slate-700 mb-1">Alamat Email *</label>
-                                            <input type="email" name="new_email" placeholder="rahmat@univ.ac.id" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                                        </div>
-                                        <div>
-                                            <label class="block font-bold text-slate-700 mb-1">NIM *</label>
-                                            <input type="text" name="new_student_id" placeholder="202401004" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block font-bold text-slate-700 mb-1">Program Studi</label>
-                                            <input type="text" name="new_major" placeholder="Ilmu Komputer" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                                        </div>
-                                        <div>
-                                            <label class="block font-bold text-slate-700 mb-1">Fakultas</label>
-                                            <input type="text" name="new_faculty" placeholder="Fakultas Teknik" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Common Fields: Role & Division -->
-                                <div class="pt-2 border-t border-slate-100 space-y-3">
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Peran Struktural *</label>
-                                        <select name="role" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white">
-                                            <option value="MEMBER">Anggota Mahasiswa</option>
-                                            <option value="LEADER">Ketua Kelompok (Koordinator Utama)</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Divisi / Penugasan Kerja</label>
-                                        <input type="text" name="contribution_notes" placeholder="cth: Divisi UMKM & Ekonomi Kreatif" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
-                                        
-                                        <!-- Division Presets Quick Tags -->
-                                        <div class="flex flex-wrap gap-1.5 mt-2">
-                                            <span class="text-[10px] text-slate-400 font-semibold self-center">Pilihan cepat:</span>
-                                            <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Divisi UMKM & Ekonomi Kreatif'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">UMKM</button>
-                                            <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Divisi Web GIS & Lingkungan'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">Web GIS</button>
-                                            <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Divisi Pariwisata & Media Publikasi'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">Wisata/Media</button>
-                                            <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Sekretaris & Administrasi Tim'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">Sekretaris</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="pt-4 flex items-center justify-end space-x-3">
-                                    <button @click="addModalOpen = false" type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">
-                                        Batal
-                                    </button>
-                                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-600/20">
-                                        Simpan Anggota
-                                    </button>
-                                </div>
-                            </form>
                         </div>
+                        <button @click="addModalOpen = false" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
+
+                    <!-- Mode Switcher -->
+                    <div class="flex p-1 rounded-xl bg-slate-100 text-xs font-bold">
+                        <button @click="activeTab = 'existing'" type="button" :class="activeTab === 'existing' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="flex-1 py-1.5 rounded-lg transition">
+                            Pilih Mahasiswa Terdaftar
+                        </button>
+                        <button @click="activeTab = 'new'" type="button" :class="activeTab === 'new' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'" class="flex-1 py-1.5 rounded-lg transition">
+                            Daftarkan Mahasiswa Baru
+                        </button>
+                    </div>
+
+                    <form action="{{ route('group.members.store', $group->id) }}" method="POST" class="space-y-4 text-xs">
+                        @csrf
+
+                        <!-- Tab 1: Existing Student -->
+                        <div x-show="activeTab === 'existing'" class="space-y-3">
+                            <label class="block font-bold text-slate-700">Pilih Akun Mahasiswa</label>
+                            @if($availableStudents->isEmpty())
+                                <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px]">
+                                    Tidak ada mahasiswa bebas kelompok. Silakan gunakan tab <strong>"Daftarkan Mahasiswa Baru"</strong> untuk menginput profil anggota baru.
+                                </div>
+                            @else
+                                <select name="user_id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white font-medium">
+                                    <option value="">-- Pilih Mahasiswa --</option>
+                                    @foreach($availableStudents as $s)
+                                        <option value="{{ $s->id }}">{{ $s->name }} ({{ $s->student_id ?? 'NIM' }}) — {{ $s->major ?? 'Umum' }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
+
+                        <!-- Tab 2: New Student -->
+                        <div x-show="activeTab === 'new'" class="space-y-3">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Nama Lengkap Mahasiswa *</label>
+                                <input type="text" name="new_name" placeholder="cth: Rahmat Hidayat" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">Alamat Email *</label>
+                                    <input type="email" name="new_email" placeholder="rahmat@univ.ac.id" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                                </div>
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">NIM *</label>
+                                    <input type="text" name="new_student_id" placeholder="202401004" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">Program Studi</label>
+                                    <input type="text" name="new_major" placeholder="Ilmu Komputer" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                                </div>
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">Fakultas</label>
+                                    <input type="text" name="new_faculty" placeholder="Fakultas Teknik" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Common Fields: Role & Division -->
+                        <div class="pt-2 border-t border-slate-100 space-y-3">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Peran Struktural *</label>
+                                <select name="role" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white">
+                                    <option value="MEMBER">Anggota Mahasiswa</option>
+                                    <option value="LEADER">Ketua Kelompok (Koordinator Utama)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Divisi / Penugasan Kerja</label>
+                                <input type="text" name="contribution_notes" placeholder="cth: Divisi UMKM & Ekonomi Kreatif" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                                
+                                <!-- Division Presets Quick Tags -->
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    <span class="text-[10px] text-slate-400 font-semibold self-center">Pilihan cepat:</span>
+                                    <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Divisi UMKM & Ekonomi Kreatif'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">UMKM</button>
+                                    <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Divisi Web GIS & Lingkungan'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">Web GIS</button>
+                                    <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Divisi Pariwisata & Media Publikasi'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">Wisata/Media</button>
+                                    <button type="button" @click="$el.closest('form').querySelector('[name=contribution_notes]').value = 'Sekretaris & Administrasi Tim'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-700 text-[10px] font-bold">Sekretaris</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex items-center justify-end space-x-3">
+                            <button @click="addModalOpen = false" type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-600/20 transition">
+                                Simpan Anggota
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
             <!-- MODAL 2: Edit Divisi & Peran Anggota -->
-            <div x-show="editModalOpen" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                    <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="editModalOpen = false" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+            <div x-show="editModalOpen" 
+                 x-cloak
+                 style="display: none;" 
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm overflow-y-auto"
+                 x-transition:enter="ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+
+                <div @click.away="editModalOpen = false" 
+                     class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 relative z-10 my-8 space-y-5">
                     
-                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-                    <div x-show="editModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-slate-200">
-                        
-                        <div class="p-6 sm:p-8 space-y-5">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
-                                        ✏️
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg font-black text-slate-900">Perbarui Peran / Divisi</h3>
-                                        <p class="text-xs text-slate-500" x-text="'Mahasiswa: ' + editMemberName"></p>
-                                    </div>
-                                </div>
-                                <button @click="editModalOpen = false" type="button" class="text-slate-400 hover:text-slate-600">✕</button>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
+                                ✏️
                             </div>
-
-                            <form :action="'{{ url('/workspace/group/' . $group->id . '/members') }}/' + editMemberId" method="POST" class="space-y-4 text-xs">
-                                @csrf
-                                @method('PUT')
-
-                                <div>
-                                    <label class="block font-bold text-slate-700 mb-1">Peran Struktural *</label>
-                                    <select name="role" x-model="editRole" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white">
-                                        <option value="MEMBER">Anggota</option>
-                                        <option value="LEADER">Ketua Kelompok (Koordinator Utama)</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block font-bold text-slate-700 mb-1">Penugasan Divisi / Catatan Kontribusi</label>
-                                    <input type="text" name="contribution_notes" x-model="editNotes" placeholder="cth: Divisi UMKM, Divisi Kesehatan, dsb." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs">
-                                </div>
-
-                                <div class="pt-4 flex items-center justify-end space-x-3">
-                                    <button @click="editModalOpen = false" type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200">
-                                        Batal
-                                    </button>
-                                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-600/20">
-                                        Simpan Perubahan
-                                    </button>
-                                </div>
-                            </form>
+                            <div>
+                                <h3 class="text-lg font-black text-slate-900">Perbarui Peran / Divisi</h3>
+                                <p class="text-xs text-slate-500 font-medium" x-text="'Mahasiswa: ' + editMemberName"></p>
+                            </div>
                         </div>
+                        <button @click="editModalOpen = false" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
+
+                    <form :action="'{{ url('/workspace/group/' . $group->id . '/members') }}/' + editMemberId" method="POST" class="space-y-4 text-xs">
+                        @csrf
+                        @method('PUT')
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Peran Struktural *</label>
+                            <select name="role" x-model="editRole" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs bg-white font-semibold text-slate-800">
+                                <option value="MEMBER">Anggota</option>
+                                <option value="LEADER">Ketua Kelompok (Koordinator Utama)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Penugasan Divisi / Catatan Kontribusi</label>
+                            <input type="text" name="contribution_notes" x-model="editNotes" placeholder="cth: Divisi UMKM, Divisi Kesehatan, dsb." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800">
+                            
+                            <!-- Presets -->
+                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                <span class="text-[10px] text-slate-400 font-semibold self-center">Pilihan cepat:</span>
+                                <button type="button" @click="editNotes = 'Divisi UMKM & Ekonomi Kreatif'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-blue-100 text-slate-700 text-[10px] font-bold">UMKM</button>
+                                <button type="button" @click="editNotes = 'Divisi Web GIS & Lingkungan'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-blue-100 text-slate-700 text-[10px] font-bold">Web GIS</button>
+                                <button type="button" @click="editNotes = 'Divisi Pariwisata & Media Publikasi'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-blue-100 text-slate-700 text-[10px] font-bold">Wisata</button>
+                                <button type="button" @click="editNotes = 'Sekretaris & Administrasi Tim'" class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-blue-100 text-slate-700 text-[10px] font-bold">Sekretaris</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex items-center justify-end space-x-3">
+                            <button @click="editModalOpen = false" type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-600/20 transition">
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         @endif
