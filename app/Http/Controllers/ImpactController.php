@@ -54,7 +54,7 @@ class ImpactController extends Controller
             'target' => $validated['target'],
             'achieved' => $validated['achieved'],
             'unit' => $validated['unit'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
         ]);
 
         ActivityLog::create([

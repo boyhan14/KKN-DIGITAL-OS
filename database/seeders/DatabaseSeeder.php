@@ -240,7 +240,7 @@ class DatabaseSeeder extends Seeder
             'group_code' => 'KKN-14-SUKAMAJU',
             'start_date' => now()->subDays(45)->toDateString(),
             'end_date' => now()->addDays(15)->toDateString(),
-            'status' => 'COMPLETED',
+            'status' => 'ACTIVE',
         ]);
 
         GroupMember::create(['kkn_group_id' => $group->id, 'user_id' => $groupLeader->id, 'role' => 'LEADER', 'contribution_notes' => 'Koordinator tim']);
@@ -896,8 +896,8 @@ class DatabaseSeeder extends Seeder
             'readiness_score' => 100,
             'handover_date' => now()->subDays(2)->toDateString(),
             'village_admin_id' => $villageAdmin->id,
-            'status' => 'COMPLETED',
-            'completed_at' => now()->subDays(2),
+            'status' => 'DRAFT',
+            'completed_at' => null,
         ]);
 
         $handoverItems = [

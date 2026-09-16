@@ -124,6 +124,11 @@ class KknGroup extends Model
         return $this->hasMany(HandoverPackage::class);
     }
 
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class);
+    }
+
     public function progressPercentage(): int
     {
         $totalPrograms = $this->programs()->count();

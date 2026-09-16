@@ -43,11 +43,11 @@ class EventController extends Controller
             'title' => $validated['title'],
             'slug' => $slug,
             'date' => $validated['date'],
-            'start_time' => $validated['start_time'],
-            'end_time' => $validated['end_time'],
-            'location' => $validated['location'],
+            'start_time' => $validated['start_time'] ?? null,
+            'end_time' => $validated['end_time'] ?? null,
+            'location' => $validated['location'] ?? null,
             'organizer' => $validated['organizer'] ?? 'Pemerintah Desa / Tim KKN',
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'status' => 'DRAFT',
         ]);
 

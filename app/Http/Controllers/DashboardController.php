@@ -31,7 +31,16 @@ class DashboardController extends Controller
             return redirect()->route('group.workspace', $group->id);
         }
 
-        // Fallback to campus or public
-        return redirect()->route('campus.dashboard');
+        $village = $tenantService->getUserVillage($user);
+        if ($village) {
+            return redirect()->route('village.workspace', $village->id);
+        }
+
+        $firstVillage = \App\Models\Village::first();
+        if ($firstVillage) {
+            return redirect()->route('public.village.home', $firstVillage->slug);
+        }
+
+        return redirect()->route('landing');
     }
 }

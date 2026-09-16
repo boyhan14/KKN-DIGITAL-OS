@@ -51,7 +51,7 @@ class ArticleController extends Controller
             'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['content']), 150),
             'content' => $validated['content'],
             'meta_title' => $validated['meta_title'] ?? $validated['title'],
-            'meta_description' => $validated['meta_description'] ?? $validated['excerpt'],
+            'meta_description' => $validated['meta_description'] ?? ($validated['excerpt'] ?? null),
             'status' => 'DRAFT',
         ]);
 

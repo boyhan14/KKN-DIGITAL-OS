@@ -62,9 +62,9 @@ class CampusController extends Controller
             'name' => $validated['name'],
             'year' => $validated['year'],
             'period' => $validated['period'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
-            'description' => $validated['description'],
+            'start_date' => $validated['start_date'] ?? null,
+            'end_date' => $validated['end_date'] ?? null,
+            'description' => $validated['description'] ?? null,
             'status' => 'ACTIVE',
         ]);
 
@@ -101,8 +101,8 @@ class CampusController extends Controller
             'province' => $validated['province'],
             'regency' => $validated['regency'],
             'district' => $validated['district'],
-            'head_name' => $validated['head_name'],
-            'contact' => $validated['contact'],
+            'head_name' => $validated['head_name'] ?? null,
+            'contact' => $validated['contact'] ?? null,
             'latitude' => $validated['latitude'] ?? -5.3600000,
             'longitude' => $validated['longitude'] ?? 105.1800000,
             'theme' => $validated['theme'] ?? 'modern',

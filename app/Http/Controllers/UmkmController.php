@@ -55,13 +55,13 @@ class UmkmController extends Controller
             'slug' => $slug,
             'owner_name' => $validated['owner_name'],
             'category' => $validated['category'],
-            'description' => $validated['description'],
-            'address' => $validated['address'],
+            'description' => $validated['description'] ?? null,
+            'address' => $validated['address'] ?? null,
             'latitude' => $validated['latitude'] ?? $village->latitude,
             'longitude' => $validated['longitude'] ?? $village->longitude,
-            'phone' => $validated['phone'],
-            'whatsapp' => $validated['whatsapp'],
-            'instagram' => $validated['instagram'],
+            'phone' => $validated['phone'] ?? null,
+            'whatsapp' => $validated['whatsapp'] ?? null,
+            'instagram' => $validated['instagram'] ?? null,
             'status' => 'DRAFT',
         ]);
 

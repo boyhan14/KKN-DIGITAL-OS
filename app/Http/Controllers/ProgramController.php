@@ -61,14 +61,14 @@ class ProgramController extends Controller
             'title' => $validated['title'],
             'slug' => $slug,
             'category' => $validated['category'],
-            'objective' => $validated['objective'],
-            'target_audience' => $validated['target_audience'],
-            'location' => $validated['location'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
+            'objective' => $validated['objective'] ?? null,
+            'target_audience' => $validated['target_audience'] ?? null,
+            'location' => $validated['location'] ?? null,
+            'start_date' => $validated['start_date'] ?? null,
+            'end_date' => $validated['end_date'] ?? null,
             'budget' => $validated['budget'] ?? 0,
             'priority' => $validated['priority'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'status' => 'PLANNED',
         ]);
 
@@ -123,12 +123,12 @@ class ProgramController extends Controller
         $task = ProgramTask::create([
             'program_id' => $program->id,
             'kkn_group_id' => $group->id,
-            'assignee_id' => $validated['assignee_id'],
+            'assignee_id' => $validated['assignee_id'] ?? null,
             'title' => $validated['title'],
             'priority' => $validated['priority'],
             'status' => $validated['status'],
-            'due_date' => $validated['due_date'],
-            'description' => $validated['description'],
+            'due_date' => $validated['due_date'] ?? null,
+            'description' => $validated['description'] ?? null,
         ]);
 
         return back()->with('success', 'Tugas baru berhasil ditambahkan.');

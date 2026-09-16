@@ -38,7 +38,7 @@ class GalleryController extends Controller
             'kkn_group_id' => $activeGroup?->id,
             'album_name' => $validated['album_name'],
             'slug' => $slug,
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
         ]);
 
         ActivityLog::create([
@@ -71,7 +71,7 @@ class GalleryController extends Controller
             'file_name' => 'Dokumentasi ' . ($validated['caption'] ?? 'KKN'),
             'file_type' => 'image/jpeg',
             'file_size' => 1024000,
-            'caption' => $validated['caption'],
+            'caption' => $validated['caption'] ?? null,
             'photographer' => $validated['photographer'] ?? auth()->user()->name,
             'date' => $validated['date'] ?? now()->toDateString(),
             'location' => $validated['location'] ?? $village->name,

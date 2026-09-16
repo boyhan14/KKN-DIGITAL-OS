@@ -50,13 +50,13 @@ class TourismController extends Controller
             'name' => $validated['name'],
             'slug' => $slug,
             'category' => $validated['category'],
-            'description' => $validated['description'],
-            'address' => $validated['address'],
+            'description' => $validated['description'] ?? null,
+            'address' => $validated['address'] ?? null,
             'latitude' => $validated['latitude'] ?? $village->latitude,
             'longitude' => $validated['longitude'] ?? $village->longitude,
             'opening_hours' => $validated['opening_hours'] ?? 'Setiap Hari, 08.00 - 17.00 WIB',
             'ticket_price' => $validated['ticket_price'] ?? 0,
-            'contact' => $validated['contact'],
+            'contact' => $validated['contact'] ?? null,
             'status' => 'DRAFT',
         ]);
 
