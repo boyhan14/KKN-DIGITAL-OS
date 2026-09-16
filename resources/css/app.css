@@ -15,6 +15,52 @@
     --color-primary-900: #064e3b;
 }
 
+/* Eye-pleasing Animations */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(0.5deg); }
+}
+
+@keyframes float-reverse {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(10px) rotate(-0.5deg); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.35; transform: scale(1); filter: blur(40px); }
+    50% { opacity: 0.65; transform: scale(1.08); filter: blur(50px); }
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+    animation: float-reverse 7s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+    animation: pulse-glow 9s ease-in-out infinite;
+}
+
+/* Glassmorphic and Ambient Utilities */
+.glass-card {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+}
+
+.glass-card-hover {
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px -15px rgba(5, 150, 105, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.25) inset;
+}
+
 @media print {
     .no-print {
         display: none !important;
