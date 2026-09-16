@@ -8,29 +8,31 @@
                 <p class="text-xs text-slate-500 mt-1">Pantau kemajuan harian mahasiswa dan validasi konten sebelum tayang di portal publik desa.</p>
             </div>
             <div class="flex items-center space-x-2">
-                <span class="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 font-bold text-xs border border-amber-200">
-                    {{ $totalPending }} Konten Menunggu Review
+                <span class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-2xl bg-amber-50 text-amber-900 font-extrabold text-xs border border-amber-200 shadow-xs">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 radar-ping"></span>
+                    <span>{{ $totalPending }} Konten Menunggu Review</span>
                 </span>
             </div>
         </div>
 
         <!-- Supervised Groups Cards -->
         <div>
-            <h3 class="text-base font-bold text-slate-900 mb-4">Kelompok KKN Bimbingan Anda</h3>
+            <h3 class="text-base font-black text-slate-900 mb-4 tracking-tight">Kelompok KKN Bimbingan Anda</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($groups as $group)
                     @php
                         $prog = $groupProgress[$group->id]['total'] ?? 0;
                     @endphp
-                    <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs hover:border-emerald-500/60 transition">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                                {{ $group->group_code }}
-                            </span>
-                            <span class="text-xs font-extrabold {{ $prog >= 80 ? 'text-emerald-600' : 'text-slate-700' }}">
-                                {{ $prog }}% Selesai
-                            </span>
-                        </div>
+                    <div class="card-lift p-6 rounded-3xl bg-white border border-slate-200/80 shadow-md flex flex-col justify-between group">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-mono font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                    {{ $group->group_code }}
+                                </span>
+                                <span class="text-xs font-black {{ $prog >= 80 ? 'text-emerald-600' : 'text-slate-700' }}">
+                                    {{ $prog }}% Selesai
+                                </span>
+                            </div>
                         <h4 class="text-lg font-black text-slate-900">{{ $group->group_name }}</h4>
                         <p class="text-xs text-slate-500 mt-0.5">
                             Lokasi: <span class="font-bold text-slate-700">Desa {{ $group->village->name ?? '-' }}</span> ({{ $group->village->regency ?? '' }})

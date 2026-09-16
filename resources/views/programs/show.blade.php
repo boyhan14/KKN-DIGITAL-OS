@@ -2,20 +2,20 @@
     <div class="space-y-8" x-data="{ taskModal: false, selectedCol: 'TODO' }">
         
         <!-- Program Header & Details -->
-        <div class="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-xs">
+        <div class="glass-card-premium p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-md">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <div class="flex items-center space-x-2">
-                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
+                        <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-extrabold border border-emerald-200">
                             {{ $program->category }}
                         </span>
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $program->status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800' }}">
+                        <span class="px-3 py-1 rounded-full text-xs font-extrabold {{ $program->status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800' }}">
                             {{ $program->status }}
                         </span>
-                        <span class="text-xs text-slate-400">Prioritas: <strong>{{ $program->priority }}</strong></span>
+                        <span class="text-xs text-slate-500 font-semibold">Prioritas: <strong class="text-slate-800">{{ $program->priority }}</strong></span>
                     </div>
-                    <h2 class="text-2xl font-black text-slate-900 mt-2 tracking-tight">{{ $program->title }}</h2>
-                    <p class="text-xs text-slate-600 mt-1 max-w-3xl leading-relaxed">{{ $program->description }}</p>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">{{ $program->title }}</h2>
+                    <p class="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">{{ $program->description }}</p>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-3">
@@ -25,18 +25,18 @@
                             @csrf
                             @if($program->status !== 'COMPLETED')
                                 <input type="hidden" name="status" value="COMPLETED">
-                                <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition">
+                                <button type="submit" class="btn-shimmer px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition">
                                     ✓ Tandai Proker Selesai
                                 </button>
                             @else
                                 <input type="hidden" name="status" value="ONGOING">
-                                <button type="submit" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
                                     Buka Kembali Proker
                                 </button>
                             @endif
                         </form>
 
-                        <button @click="taskModal = true; selectedCol = 'TODO'" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center space-x-1.5">
+                        <button @click="taskModal = true; selectedCol = 'TODO'" class="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center space-x-1.5 shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             <span>Tambah Tugas</span>
                         </button>
@@ -46,16 +46,16 @@
 
             <!-- Program Target & Meta -->
             @if($program->objective)
-                <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-6 text-xs text-slate-600">
+                <div class="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-6 text-xs text-slate-600">
                     <div>
-                        <span class="font-bold text-slate-800">Sasaran:</span> {{ $program->objective }}
+                        <span class="font-extrabold text-slate-800">Sasaran:</span> {{ $program->objective }}
                     </div>
                     <div>
-                        <span class="font-bold text-slate-800">PJ / Leader:</span> {{ $program->leader->name ?? '-' }}
+                        <span class="font-extrabold text-slate-800">PJ / Leader:</span> {{ $program->leader->name ?? '-' }}
                     </div>
                     @if($program->start_date && $program->end_date)
                         <div>
-                            <span class="font-bold text-slate-800">Periode:</span> {{ $program->start_date->format('d M') }} — {{ $program->end_date->format('d M Y') }}
+                            <span class="font-extrabold text-slate-800">Periode:</span> {{ $program->start_date->format('d M') }} — {{ $program->end_date->format('d M Y') }}
                         </div>
                     @endif
                 </div>
@@ -65,20 +65,22 @@
         <!-- Kanban Board (4 Columns) -->
         <div>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-extrabold text-slate-900">Papan Tugas Kanban</h3>
-                <span class="text-xs text-slate-500">Pindahkan tugas antar kolom untuk memperbarui progres tim</span>
+                <div>
+                    <h3 class="text-base font-black text-slate-900 tracking-tight">Papan Tugas Kanban</h3>
+                    <p class="text-xs text-slate-500">Pindahkan tugas antar kolom untuk memperbarui progres tim secara kolaboratif</p>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 
                 <!-- Col 1: TODO -->
-                <div class="bg-slate-100/70 p-4 rounded-3xl border border-slate-200/80 flex flex-col min-h-[500px]">
+                <div class="bg-slate-100/80 p-4 rounded-3xl border border-slate-200/90 flex flex-col min-h-[520px] shadow-xs">
                     <div class="flex items-center justify-between mb-3 px-1">
                         <div class="flex items-center space-x-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">TODO</span>
+                            <span class="text-xs font-black text-slate-700 uppercase tracking-wider">TODO</span>
                         </div>
-                        <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200">
+                        <span class="text-xs font-black px-2.5 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 shadow-xs">
                             {{ $tasksTodo->count() }}
                         </span>
                     </div>
@@ -90,20 +92,20 @@
                     </div>
 
                     @if(!$isLocked)
-                        <button @click="taskModal = true; selectedCol = 'TODO'" class="mt-3 w-full py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-200/80 transition">
+                        <button @click="taskModal = true; selectedCol = 'TODO'" class="mt-3 w-full py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-200/90 transition shadow-xs">
                             + Tambah Tugas
                         </button>
                     @endif
                 </div>
 
                 <!-- Col 2: IN PROGRESS -->
-                <div class="bg-blue-50/50 p-4 rounded-3xl border border-blue-200/70 flex flex-col min-h-[500px]">
+                <div class="bg-blue-50/60 p-4 rounded-3xl border border-blue-200/80 flex flex-col min-h-[520px] shadow-xs">
                     <div class="flex items-center justify-between mb-3 px-1">
                         <div class="flex items-center space-x-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                            <span class="text-xs font-bold text-blue-900 uppercase tracking-wider">IN PROGRESS</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 radar-ping"></span>
+                            <span class="text-xs font-black text-blue-900 uppercase tracking-wider">IN PROGRESS</span>
                         </div>
-                        <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-white text-blue-800 border border-blue-200">
+                        <span class="text-xs font-black px-2.5 py-0.5 rounded-full bg-white text-blue-800 border border-blue-200 shadow-xs">
                             {{ $tasksInProgress->count() }}
                         </span>
                     </div>
@@ -116,13 +118,13 @@
                 </div>
 
                 <!-- Col 3: REVIEW -->
-                <div class="bg-amber-50/50 p-4 rounded-3xl border border-amber-200/70 flex flex-col min-h-[500px]">
+                <div class="bg-amber-50/60 p-4 rounded-3xl border border-amber-200/80 flex flex-col min-h-[520px] shadow-xs">
                     <div class="flex items-center justify-between mb-3 px-1">
                         <div class="flex items-center space-x-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                            <span class="text-xs font-bold text-amber-900 uppercase tracking-wider">REVIEW</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span class="text-xs font-black text-amber-900 uppercase tracking-wider">REVIEW</span>
                         </div>
-                        <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-white text-amber-800 border border-amber-200">
+                        <span class="text-xs font-black px-2.5 py-0.5 rounded-full bg-white text-amber-800 border border-amber-200 shadow-xs">
                             {{ $tasksReview->count() }}
                         </span>
                     </div>
@@ -135,13 +137,13 @@
                 </div>
 
                 <!-- Col 4: DONE -->
-                <div class="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-200/70 flex flex-col min-h-[500px]">
+                <div class="bg-emerald-50/60 p-4 rounded-3xl border border-emerald-200/80 flex flex-col min-h-[520px] shadow-xs">
                     <div class="flex items-center justify-between mb-3 px-1">
                         <div class="flex items-center space-x-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                            <span class="text-xs font-bold text-emerald-900 uppercase tracking-wider">DONE</span>
+                            <span class="text-xs font-black text-emerald-900 uppercase tracking-wider">DONE</span>
                         </div>
-                        <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-white text-emerald-800 border border-emerald-200">
+                        <span class="text-xs font-black px-2.5 py-0.5 rounded-full bg-white text-emerald-800 border border-emerald-200 shadow-xs">
                             {{ $tasksDone->count() }}
                         </span>
                     </div>

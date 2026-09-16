@@ -25,25 +25,40 @@
 
         <!-- Campus Stats Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Program KKN</div>
-                <div class="text-2xl font-black text-slate-900 mt-1">{{ $stats['total_programs'] }}</div>
-                <div class="text-[11px] text-emerald-600 mt-1 font-semibold">Tahun Aktif 2026</div>
+            <div class="card-lift p-5 rounded-3xl bg-white border border-slate-200/80 shadow-md">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Program KKN</span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                </div>
+                <div class="text-3xl font-black text-slate-900 tracking-tight">{{ $stats['total_programs'] }}</div>
+                <div class="text-[11px] text-emerald-600 mt-1 font-extrabold flex items-center space-x-1">
+                    <span>✓</span>
+                    <span>Tahun Aktif 2026</span>
+                </div>
             </div>
-            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Desa Binaan</div>
-                <div class="text-2xl font-black text-emerald-600 mt-1">{{ $stats['active_villages'] }}</div>
-                <div class="text-[11px] text-slate-500 mt-1">Terhubung ke Portal Publik</div>
+            <div class="card-lift p-5 rounded-3xl bg-white border border-slate-200/80 shadow-md">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Desa Binaan</span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 radar-ping"></span>
+                </div>
+                <div class="text-3xl font-black text-emerald-600 tracking-tight">{{ $stats['active_villages'] }}</div>
+                <div class="text-[11px] text-slate-500 mt-1 font-medium">Terhubung Portal Publik</div>
             </div>
-            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelompok Mahasiswa</div>
-                <div class="text-2xl font-black text-teal-600 mt-1">{{ $stats['total_groups'] }}</div>
-                <div class="text-[11px] text-slate-500 mt-1">Berjalan Lapangan</div>
+            <div class="card-lift p-5 rounded-3xl bg-white border border-slate-200/80 shadow-md">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Kelompok Mahasiswa</span>
+                    <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                </div>
+                <div class="text-3xl font-black text-teal-600 tracking-tight">{{ $stats['total_groups'] }}</div>
+                <div class="text-[11px] text-slate-500 mt-1 font-medium">Berjalan Lapangan</div>
             </div>
-            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mahasiswa Bertugas</div>
-                <div class="text-2xl font-black text-slate-900 mt-1">{{ $stats['total_students'] }}</div>
-                <div class="text-[11px] text-slate-500 mt-1">Terdaftar Aktif</div>
+            <div class="card-lift p-5 rounded-3xl bg-white border border-slate-200/80 shadow-md">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">Mahasiswa Bertugas</span>
+                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                </div>
+                <div class="text-3xl font-black text-slate-900 tracking-tight">{{ $stats['total_students'] }}</div>
+                <div class="text-[11px] text-indigo-600 mt-1 font-extrabold">Terdaftar Aktif</div>
             </div>
         </div>
 
