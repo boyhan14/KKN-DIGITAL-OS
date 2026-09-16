@@ -72,80 +72,105 @@
             </div>
         </div>
 
-        <!-- Navigation Links -->
+        <!-- Navigation Links (Role-Tailored Architecture) -->
         <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-xs font-semibold relative z-10">
             @php
-                $activeGroup = app(\App\Services\TenantService::class)->getUserGroup(auth()->user());
-                $activeVillage = app(\App\Services\TenantService::class)->getUserVillage(auth()->user());
+                $user = auth()->user();
+                $tenantService = app(\App\Services\TenantService::class);
+                $activeGroup = $tenantService->getUserGroup($user);
+                $activeVillage = $tenantService->getUserVillage($user);
                 $groupId = $activeGroup?->id;
                 $villageId = $activeVillage?->id;
+                $myUmkm = $user->isUmkmOwner() ? \App\Models\Umkm::where('user_id', $user->id)->first() : null;
             @endphp
 
-            @if(auth()->user()->isSuperAdmin() || auth()->user()->isCampusAdmin())
-                <div class="px-3 pt-2 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Kampus & LPPM</div>
+            {{-- 1. SUPER ADMIN / CAMPUS ADMIN (LPPM KAMPUS) --}}
+            @if($user->isSuperAdmin() || $user->isCampusAdmin())
+                <div class="px-3 pt-2 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Manajemen Kampus (LPPM)</div>
                 <a href="{{ route('campus.dashboard') }}" class="flex items-center px-3 py-2.5 rounded-xl transition {{ request()->routeIs('campus.dashboard') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-                    Dashboard Kampus
+                    Dashboard LPPM
                 </a>
             @endif
 
-            @if(auth()->user()->isSuperAdmin() || auth()->user()->isSupervisor())
-                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Dosen Pembimbing</div>
+            {{-- 2. SUPERVISOR (DOSEN PEMBIMBING LAPANGAN) --}}
+            @if($user->isSuperAdmin() || $user->isSupervisor())
+                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Bimbingan & Monitoring DPL</div>
                 <a href="{{ route('supervisor.dashboard') }}" class="flex items-center px-3 py-2.5 rounded-xl transition {{ request()->routeIs('supervisor.dashboard') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Antrean Review & Bimbingan
+                    Antrean Validasi & Review
                 </a>
+                @if($groupId)
+                    <a href="{{ route('group.activity', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.activity') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Log Lapangan Mahasiswa
+                    </a>
+                    <a href="{{ route('group.handover.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.handover.*') ? 'bg-amber-500 text-slate-950 font-bold' : 'text-amber-300 hover:bg-amber-900/30' }}">
+                        <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        Verifikasi Handover Desa
+                    </a>
+                    <a href="{{ route('group.reports.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.reports.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        Laporan Bimbingan KKN
+                    </a>
+                @endif
             @endif
 
-            @if($groupId)
-                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Kelompok KKN</div>
-                <a href="{{ route('group.workspace', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.workspace') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                    Overview Workspace
-                </a>
-                <a href="{{ route('group.programs.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.programs.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                    Program Kerja & Kanban
-                </a>
-                <a href="{{ route('group.impact.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.impact.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                    Impact Dashboard
-                </a>
-                <a href="{{ route('group.handover.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.handover.*') ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-900/40' : 'text-amber-300 hover:bg-amber-900/30' }}">
-                    <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                    Digital Handover
-                </a>
-                <a href="{{ route('group.documents.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.documents.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    Repositori Dokumen
-                </a>
-                <a href="{{ route('group.reports.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.reports.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    Laporan KKN (PDF/Print)
-                </a>
-                <a href="{{ route('group.members', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.members') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
-                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    Anggota Kelompok
-                </a>
+            {{-- 3. STUDENT & GROUP LEADER (TIM MAHASISWA KKN) --}}
+            @if($user->isStudent() || $user->isSuperAdmin())
+                @if($groupId)
+                    <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Workspace Tim KKN</div>
+                    <a href="{{ route('group.workspace', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.workspace') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                        Overview Workspace
+                    </a>
+                    <a href="{{ route('group.programs.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.programs.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        Program Kerja & Kanban
+                    </a>
+                    <a href="{{ route('group.impact.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.impact.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        Impact Dashboard
+                    </a>
+                    <a href="{{ route('group.handover.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.handover.*') ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-900/40' : 'text-amber-300 hover:bg-amber-900/30' }}">
+                        <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                        Persiapan Serah Terima
+                    </a>
+                    <a href="{{ route('group.documents.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.documents.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        Repositori Dokumen
+                    </a>
+                    <a href="{{ route('group.reports.index', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.reports.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        Laporan Akhir KKN (PDF)
+                    </a>
+                    <a href="{{ route('group.members', $groupId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('group.members') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                        <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        Anggota Kelompok
+                    </a>
+                @endif
             @endif
 
-            @if($villageId)
-                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Data Desa & Digitalisasi</div>
+            {{-- 4. VILLAGE ADMIN & STUDENT (DATA DIGITALISASI DESA) --}}
+            @if(($user->isVillageAdmin() || $user->isStudent() || $user->isSuperAdmin()) && $villageId)
+                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">
+                    {{ $user->isVillageAdmin() ? 'Pemerintah Desa' : 'Digitalisasi Desa' }}
+                </div>
                 <a href="{{ route('village.profile.edit', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.profile.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    Profil & Fasilitas Desa
+                    Profil Balai Desa
                 </a>
                 <a href="{{ route('village.umkm.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.umkm.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    Direktori UMKM & Produk
+                    Katalog UMKM Warga
                 </a>
                 <a href="{{ route('village.tourism.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.tourism.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Potensi Wisata
+                    Destinasi Wisata
                 </a>
                 <a href="{{ route('village.map.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.map.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    Peta Digital GIS
+                    Peta Spasial GIS
                 </a>
                 <a href="{{ route('village.events.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.events.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -153,14 +178,34 @@
                 </a>
                 <a href="{{ route('village.articles.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.articles.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-                    Berita & Artikel CMS
+                    Warta & Berita Desa
                 </a>
                 <a href="{{ route('village.gallery.index', $villageId) }}" class="flex items-center px-3 py-2 rounded-xl transition {{ request()->routeIs('village.gallery.*') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
                     <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    Galeri & Dokumentasi
+                    Galeri Dokumentasi
+                </a>
+                @if($user->isVillageAdmin())
+                    <a href="{{ route('public.village.handover', $activeVillage->slug) }}" class="flex items-center px-3 py-2 rounded-xl transition text-amber-300 hover:bg-amber-900/30">
+                        <svg class="w-4 h-4 mr-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        Piagam Serah Terima KKN
+                    </a>
+                @endif
+            @endif
+
+            {{-- 5. UMKM OWNER (PELAKU USAHA DESA) --}}
+            @if($user->isUmkmOwner() && $myUmkm)
+                <div class="px-3 pt-3 pb-1 text-[10px] font-extrabold text-emerald-400/80 tracking-widest uppercase">Portal Usaha Saya</div>
+                <a href="{{ route('village.umkm.edit', ['village' => $myUmkm->village_id, 'umkm' => $myUmkm->id]) }}" class="flex items-center px-3 py-2.5 rounded-xl transition {{ request()->routeIs('village.umkm.edit') ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-md shadow-emerald-900/40' : 'text-slate-300 hover:bg-emerald-900/40 hover:text-white' }}">
+                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    Kelola Produk & Usaha
+                </a>
+                <a href="{{ route('public.village.umkm.show', [$myUmkm->village->slug, $myUmkm->slug]) }}" target="_blank" class="flex items-center px-3 py-2 rounded-xl transition text-slate-300 hover:bg-emerald-900/40 hover:text-white">
+                    <svg class="w-4 h-4 mr-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    Lihat Toko Publik
                 </a>
             @endif
 
+            {{-- LINK KE PORTAL PUBLIK DESA --}}
             @if($activeVillage)
                 <div class="pt-4 pb-2 px-3">
                     <a href="{{ route('public.village.home', $activeVillage->slug) }}" target="_blank" class="flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-bold text-xs border border-emerald-500/30 transition shadow-sm">

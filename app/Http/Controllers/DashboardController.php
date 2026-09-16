@@ -26,6 +26,17 @@ class DashboardController extends Controller
             }
         }
 
+        if ($user->isUmkmOwner()) {
+            $myUmkm = \App\Models\Umkm::where('user_id', $user->id)->first();
+            if ($myUmkm) {
+                return redirect()->route('village.umkm.edit', ['village' => $myUmkm->village_id, 'umkm' => $myUmkm->id]);
+            }
+            $village = $tenantService->getUserVillage($user);
+            if ($village) {
+                return redirect()->route('village.umkm.create', $village->id);
+            }
+        }
+
         $group = $tenantService->getUserGroup($user);
         if ($group) {
             return redirect()->route('group.workspace', $group->id);

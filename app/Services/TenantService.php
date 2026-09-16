@@ -52,7 +52,11 @@ class TenantService
             return $user->supervisedGroups()->first();
         }
 
-        return KknGroup::first();
+        if ($user->isSuperAdmin()) {
+            return KknGroup::first();
+        }
+
+        return null;
     }
 
     /**
